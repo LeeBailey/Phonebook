@@ -1,0 +1,5 @@
+{
+  "ConnectionStrings": {
+    "PhonebookDbConnection": "Server=(localdb)\\mssqllocaldb;Database=Phonebook;Trusted_Connection=True;MultipleActiveResultSets=true"
+  }
+}
