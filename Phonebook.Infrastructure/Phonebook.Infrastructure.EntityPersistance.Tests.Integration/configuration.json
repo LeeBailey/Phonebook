@@ -1,5 +1,5 @@
 {
   "ConnectionStrings": {
-    "PhonebookDbConnection": "Server=(localdb)\\mssqllocaldb;Database=Phonebook;Trusted_Connection=True;MultipleActiveResultSets=true"
+    "PhonebookDbConnection": "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\leeba\\source\\repos\\LeeBailey.Phonebook\\Phonebook.Api\\App_Data\\Phonebook.mdf;Integrated Security=True;Connect Timeout=30"
   }
 }
