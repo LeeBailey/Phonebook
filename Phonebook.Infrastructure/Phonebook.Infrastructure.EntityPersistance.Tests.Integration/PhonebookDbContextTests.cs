@@ -16,10 +16,8 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
         public async Task GivenPhonebookDoesNotExist_WhenGetUserPhonebookIsCalled_ThenNullIsReturned()
         {
             // Arrange
-            var optionsBuilder = new DbContextOptionsBuilder<PhonebookDbContext>();
-            optionsBuilder.UseSqlServer(DataHelper.GetConnectionString());
-
-            using var context = new PhonebookDbContext(optionsBuilder.Options);
+            var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
+            using var context = dbContextFactory.Create();
 
             // Act
             var result = await context.GetUserPhonebook(DataHelper.GetRandomInt());
@@ -33,10 +31,8 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
         {
             // Arrange
             var ownerUserId = DataHelper.GetRandomInt();
-            var optionsBuilder = new DbContextOptionsBuilder<PhonebookDbContext>();
-            optionsBuilder.UseSqlServer(DataHelper.GetConnectionString());
-
-            using var context = new PhonebookDbContext(optionsBuilder.Options);
+            var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
+            using var context = dbContextFactory.Create();
 
             var existingPhonebook = new UserPhonebookData { OwnerUserId = ownerUserId };
 
@@ -61,15 +57,13 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
         {
             // Arrange
             var ownerUserId = DataHelper.GetRandomInt();
-            var optionsBuilder = new DbContextOptionsBuilder<PhonebookDbContext>();
-            optionsBuilder.UseSqlServer(DataHelper.GetConnectionString());
-
-            using var context = new PhonebookDbContext(optionsBuilder.Options);
+            var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
+            using var context = dbContextFactory.Create();
 
             var existingPhonebook = new UserPhonebookData
             {
                 OwnerUserId = ownerUserId,
-                Contacts = new List<ContactData> 
+                Contacts = new List<ContactData>
                 {
                     new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() },
                     new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() },
@@ -99,10 +93,8 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
             // Arrange
             var ownerUserId = DataHelper.GetRandomInt();
             var differentUserId = DataHelper.GetRandomInt();
-            var optionsBuilder = new DbContextOptionsBuilder<PhonebookDbContext>();
-            optionsBuilder.UseSqlServer(DataHelper.GetConnectionString());
-
-            using var context = new PhonebookDbContext(optionsBuilder.Options);
+            var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
+            using var context = dbContextFactory.Create();
 
             var existingPhonebook = new UserPhonebookData
             {
@@ -151,8 +143,8 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
            int contactFullNameLength, int contactPhoneNumberLength)
         {
             // Arrange
-            var optionsBuilder = new DbContextOptionsBuilder<PhonebookDbContext>();
-            optionsBuilder.UseSqlServer(DataHelper.GetConnectionString());
+            var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
+            using var context = dbContextFactory.Create();
 
             var existingPhonebook = new UserPhonebookData
             {
@@ -164,7 +156,6 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 DataHelper.SaveUserPhonebook(existingPhonebook);
 
                 // Act
-                using var context = new PhonebookDbContext(optionsBuilder.Options);
                 var userPhonebook = await context.GetUserPhonebook(existingPhonebook.OwnerUserId);
                 userPhonebook.Contacts.Add(new Contact(
                     DataHelper.GetRandomString(contactFullNameLength),
@@ -191,8 +182,8 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
             var ownerUserId = DataHelper.GetRandomInt();
             var newContactName = DataHelper.GetRandomString(15);
             var newContactPhoneNumber = DataHelper.GetRandomPhoneNumber();
-            var optionsBuilder = new DbContextOptionsBuilder<PhonebookDbContext>();
-            optionsBuilder.UseSqlServer(DataHelper.GetConnectionString());
+            var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
+            using var context = dbContextFactory.Create();
 
             var existingPhonebook = new UserPhonebookData
             {
@@ -204,7 +195,6 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 DataHelper.SaveUserPhonebook(existingPhonebook);
 
                 // Act
-                using var context = new PhonebookDbContext(optionsBuilder.Options);
                 var userPhonebook = await context.GetUserPhonebook(existingPhonebook.OwnerUserId);
                 userPhonebook.Contacts.Add(new Contact(newContactName, newContactPhoneNumber));
                 await context.SaveChangesAsync();
@@ -232,15 +222,15 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
             var ownerUserId = DataHelper.GetRandomInt();
             var newContactName = DataHelper.GetRandomString(15);
             var newContactPhoneNumber = DataHelper.GetRandomPhoneNumber();
-            var optionsBuilder = new DbContextOptionsBuilder<PhonebookDbContext>();
-            optionsBuilder.UseSqlServer(DataHelper.GetConnectionString());
+            var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
+            using var context = dbContextFactory.Create();
 
             var existingPhonebook = new UserPhonebookData
             {
                 OwnerUserId = ownerUserId,
                 Contacts = new List<ContactData>
                 {
-                    new ContactData { 
+                    new ContactData {
                         ContactName = DataHelper.GetRandomString(20), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() }
                 }
             };
@@ -250,7 +240,6 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 DataHelper.SaveUserPhonebook(existingPhonebook);
 
                 // Act
-                using var context = new PhonebookDbContext(optionsBuilder.Options);
                 var userPhonebook = await context.GetUserPhonebook(existingPhonebook.OwnerUserId);
                 userPhonebook.Contacts.Add(new Contact(newContactName, newContactPhoneNumber));
                 await context.SaveChangesAsync();
