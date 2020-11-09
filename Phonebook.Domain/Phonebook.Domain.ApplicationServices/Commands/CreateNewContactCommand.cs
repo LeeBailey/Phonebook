@@ -31,12 +31,11 @@ namespace Phonebook.Domain.ApplicationServices.Commands
 
             using var phonebookDbContext = _phonebookDbContextFactory.Create();
 
-            var phonebook = phonebookDbContext.UserPhonebooks
-                .SingleOrDefault(x => x.Id == createNewContactDto.UserPhonebookId);
+            var phonebook = await phonebookDbContext.GetUserPhonebook(createNewContactDto.OwnerUserId);
 
             if (phonebook is null)
             {
-                throw new UserPhonebookNotFoundException(createNewContactDto.UserPhonebookId);
+                throw new UserPhonebookNotFoundException(createNewContactDto.OwnerUserId);
             }
 
             phonebook.Contacts.Add(

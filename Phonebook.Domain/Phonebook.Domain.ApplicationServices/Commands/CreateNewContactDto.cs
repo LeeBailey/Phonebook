@@ -5,19 +5,19 @@ namespace Phonebook.Domain.ApplicationServices.Commands
     public class CreateNewContactDto
     {
         public CreateNewContactDto(
-            int userPhonebookId,
+            int ownerUserId,
             string contactFullName,
             PhoneNumber contactPhoneNumber)
         {
-            UserPhonebookId = userPhonebookId;
+            OwnerUserId = ownerUserId;
             ContactFullName = contactFullName;
             ContactPhoneNumber = contactPhoneNumber;
         }
 
-        public int UserPhonebookId { get; set; }
+        public int OwnerUserId { get; set; }
         
-        public string ContactFullName { get; set; }
+        public string ContactFullName { get; protected set; }
 
-        public PhoneNumber ContactPhoneNumber { get; set; }
+        public PhoneNumber ContactPhoneNumber { get; protected set; }
     }
 }

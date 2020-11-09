@@ -18,10 +18,9 @@ namespace Phonebook.Api.Tests.Unit.TestFramework
     public static class TestSetup
     {
         private static readonly Random _random = new Random();
-        private static readonly string _authJwtTokenSigningKey = Guid.NewGuid().ToString();
+        private static readonly string _authJwtTokenSigningKey = "*G-KaPdSgVkYp3s5v8y/B?E(H+MbQeThWmZq4t7w!z$C&F)J@NcRfUjXn2r5u8x/";
         private static readonly string _authJwtTokenAudience = "youraudience.com";
         private static readonly string _authJwtTokenIssuer = "yourissuer.com";
-
 
         public static IHost CreateHost()
         {

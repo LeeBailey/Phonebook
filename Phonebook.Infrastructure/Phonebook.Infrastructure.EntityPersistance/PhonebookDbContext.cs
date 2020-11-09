@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Phonebook.Domain.Infrastructure.Abstractions.EntityPersistance;
 using Phonebook.Domain.Model.Entities;
+using System.Threading.Tasks;
 
 namespace Phonebook.Infrastructure.EntityPersistance
 {
@@ -10,7 +11,14 @@ namespace Phonebook.Infrastructure.EntityPersistance
             : base(options)
         { }
 
-        public DbSet<UserPhonebook> UserPhonebooks { get; set; }
+        protected DbSet<UserPhonebook> UserPhonebooks { get; set; }
+
+        public async Task<UserPhonebook> GetUserPhonebook(int ownerUserId)
+        {
+            return await UserPhonebooks
+                .Include(x => x.Contacts)
+                .SingleOrDefaultAsync(x => x.OwnerUserId == ownerUserId);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

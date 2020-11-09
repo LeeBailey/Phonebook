@@ -41,8 +41,8 @@ namespace PhoneBook.Api
             services.AddMvc().AddApplicationPart(typeof(Startup).Assembly);
             services.AddControllers();
 
-            services.AddTransient<GetPhonebookContactsQuery>();
-            services.AddTransient<CreateNewContactCommand>();
+            services.AddSingleton<GetPhonebookContactsQuery>();
+            services.AddSingleton<CreateNewContactCommand>();
 
             services.AddAuthentication(options =>
             {

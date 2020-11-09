@@ -16,8 +16,8 @@ namespace Phonebook.Domain.ApplicationServices.Queries
 
         public int Id { get; protected set; }
 
-        public string ContactName { get; set; }
+        public string ContactName { get; private set; }
 
-        public PhoneNumber ContactPhoneNumber { get; set; }
+        public PhoneNumber ContactPhoneNumber { get; private set; }
     }
 }

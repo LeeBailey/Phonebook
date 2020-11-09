@@ -18,6 +18,6 @@ namespace Phonebook.Domain.Model.Entities
 
         public int OwnerUserId { get; protected set; }
 
-        public ICollection<Contact> Contacts { get; set; }
+        public ICollection<Contact> Contacts { get; protected set; }
     }
 }
