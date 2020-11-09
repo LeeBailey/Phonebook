@@ -1,7 +1,6 @@
 ﻿using Phonebook.Domain.Infrastructure.Abstractions.EntityPersistance;
 using Phonebook.Domain.Model.Entities;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Phonebook.Domain.ApplicationServices.Commands

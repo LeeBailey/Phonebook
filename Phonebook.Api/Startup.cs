@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Phonebook.Domain.ApplicationServices.Commands;
 using Phonebook.Domain.ApplicationServices.Queries;
@@ -16,12 +15,12 @@ namespace PhoneBook.Api
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
+        private readonly IConfiguration _configuration;
         private readonly string AllowSpecificOriginsPolicy = "AllowSpecificOriginsPolicy";
 
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -33,7 +32,7 @@ namespace PhoneBook.Api
                     builder =>
                     {
                         builder.WithOrigins(
-                            Configuration.GetSection("CorsAllowedOrigins")
+                            _configuration.GetSection("CorsAllowedOrigins")
                                 .GetChildren().Select(x => x.Value).ToArray());
                     });
             });
@@ -53,16 +52,16 @@ namespace PhoneBook.Api
             {
                 options.IncludeErrorDetails = true;
                 options.RequireHttpsMetadata = false;
-                options.Audience = Configuration.GetValue<string>("Authorization:JwtTokenAudience");
+                options.Audience = _configuration.GetValue<string>("Authorization:JwtTokenAudience");
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = Configuration.GetValue<string>("Authorization:JwtTokenIssuer"),
+                    ValidIssuer = _configuration.GetValue<string>("Authorization:JwtTokenIssuer"),
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(Configuration.GetValue<string>("Authorization:JwtTokenSigningKey"))),
+                        Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Authorization:JwtTokenSigningKey"))),
                 };
             });
 
@@ -72,17 +71,12 @@ namespace PhoneBook.Api
         protected virtual void ConfigureInfrastructureServices(IServiceCollection services)
         {
             services.AddSingleton<IPhonebookDbContextFactory>(
-                x => new PhonebookDbContextFactory(Configuration.GetConnectionString("PhonebookDbConnection")));
+                x => new PhonebookDbContextFactory(_configuration.GetConnectionString("PhonebookDbConnection")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -90,8 +84,6 @@ namespace PhoneBook.Api
             app.UseCors(AllowSpecificOriginsPolicy);
 
             app.UseAuthorization();
-
-            app.UseAuthentication();
 
             app.UseEndpoints(endpoints =>
             {
