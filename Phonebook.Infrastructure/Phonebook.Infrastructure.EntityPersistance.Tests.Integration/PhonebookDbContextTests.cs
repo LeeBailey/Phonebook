@@ -65,9 +65,9 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 OwnerUserId = ownerUserId,
                 Contacts = new List<ContactData>
                 {
-                    new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() },
-                    new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() },
-                    new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() }
+                    new ContactData(DataHelper.GetRandomString(15), DataHelper.GetRandomPhoneNumber()),
+                    new ContactData(DataHelper.GetRandomString(15), DataHelper.GetRandomPhoneNumber()),
+                    new ContactData(DataHelper.GetRandomString(15), DataHelper.GetRandomPhoneNumber())
                 }
             };
 
@@ -101,9 +101,9 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 OwnerUserId = ownerUserId,
                 Contacts = new List<ContactData>
                 {
-                    new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() },
-                    new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() },
-                    new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() }
+                    new ContactData(DataHelper.GetRandomString(15), DataHelper.GetRandomPhoneNumber()),
+                    new ContactData(DataHelper.GetRandomString(15), DataHelper.GetRandomPhoneNumber()),
+                    new ContactData(DataHelper.GetRandomString(15), DataHelper.GetRandomPhoneNumber())
                 }
             };
 
@@ -112,9 +112,9 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 OwnerUserId = differentUserId,
                 Contacts = new List<ContactData>
                 {
-                    new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() },
-                    new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() },
-                    new ContactData { ContactName = DataHelper.GetRandomString(15), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() }
+                    new ContactData(DataHelper.GetRandomString(15), DataHelper.GetRandomPhoneNumber()),
+                    new ContactData(DataHelper.GetRandomString(15), DataHelper.GetRandomPhoneNumber()),
+                    new ContactData(DataHelper.GetRandomString(15), DataHelper.GetRandomPhoneNumber())
                 }
             };
 
@@ -205,7 +205,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 actual.Id.Should().Be(existingPhonebook.Id);
                 actual.OwnerUserId.Should().Be(existingPhonebook.OwnerUserId);
                 actual.Contacts.Single().Should().BeEquivalentTo(
-                    new ContactData { ContactName = newContactName, ContactPhoneNumber = newContactPhoneNumber },
+                    new ContactData(newContactName, newContactPhoneNumber),
                     options => options.Excluding(x => x.Id));
                 actual.Contacts.Single().Id.Should().BeGreaterThan(0);
             }
@@ -230,8 +230,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 OwnerUserId = ownerUserId,
                 Contacts = new List<ContactData>
                 {
-                    new ContactData {
-                        ContactName = DataHelper.GetRandomString(20), ContactPhoneNumber = DataHelper.GetRandomPhoneNumber() }
+                    new ContactData(DataHelper.GetRandomString(20), DataHelper.GetRandomPhoneNumber())
                 }
             };
 
@@ -251,7 +250,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 actual.OwnerUserId.Should().Be(existingPhonebook.OwnerUserId);
                 actual.Contacts.First().Should().BeEquivalentTo(existingPhonebook.Contacts.Single());
                 actual.Contacts.Last().Should().BeEquivalentTo(
-                    new ContactData { ContactName = newContactName, ContactPhoneNumber = newContactPhoneNumber },
+                    new ContactData(newContactName, newContactPhoneNumber),
                     options => options.Excluding(x => x.Id));
                 actual.Contacts.Last().Id.Should().BeGreaterThan(0);
             }

@@ -46,11 +46,9 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
             return connection.Query(
                 "SELECT * FROM Contact WHERE UserPhonebookId = @Id",
                 new { Id = userPhonebookId })
-                .Select(row => new ContactData()
+                .Select(row => new ContactData((string)row.ContactName, new PhoneNumber((string)row.ContactPhoneNumber))
                 {
                     Id = (int)row.Id,
-                    ContactName = (string)row.ContactName,
-                    ContactPhoneNumber = new PhoneNumber((string)row.ContactPhoneNumber)
                 }).ToList();
         }
 
@@ -128,6 +126,12 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
 
     internal class ContactData
     {
+        internal ContactData(string contactName, PhoneNumber phoneNumber)
+        {
+            ContactName = contactName;
+            ContactPhoneNumber = phoneNumber;
+        }
+
         public int Id { get; set; }
 
         public string ContactName { get; set; }
