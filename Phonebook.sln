@@ -21,6 +21,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Phonebook.Infrastructure.En
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Phonebook.Infrastructure.EntityPersistance.Tests.Integration", "Phonebook.Infrastructure\Phonebook.Infrastructure.EntityPersistance.Tests.Integration\Phonebook.Infrastructure.EntityPersistance.Tests.Integration.csproj", "{A94AFC93-08B8-4AC1-BB6B-6FF4450669AA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_tools", "_tools", "{8929E57D-7A58-423E-93A5-231203EEC685}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AccessTokenGenerator", "_tools\AccessTokenGenerator\AccessTokenGenerator.csproj", "{8CA2B58C-5DC3-4B6B-98A9-392DFFB2CDEE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +59,10 @@ Global
 		{A94AFC93-08B8-4AC1-BB6B-6FF4450669AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A94AFC93-08B8-4AC1-BB6B-6FF4450669AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A94AFC93-08B8-4AC1-BB6B-6FF4450669AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CA2B58C-5DC3-4B6B-98A9-392DFFB2CDEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CA2B58C-5DC3-4B6B-98A9-392DFFB2CDEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CA2B58C-5DC3-4B6B-98A9-392DFFB2CDEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CA2B58C-5DC3-4B6B-98A9-392DFFB2CDEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -65,6 +73,7 @@ Global
 		{76763FC5-E82D-4446-A975-B1BF11DD35A0} = {515D3250-89D1-4008-B8FF-CCD4C50A36B0}
 		{BC7FFB7D-D98C-4FA4-BFFE-C53C15C6AE3C} = {7AC18875-0F46-4997-B71D-0DAB980F63DA}
 		{A94AFC93-08B8-4AC1-BB6B-6FF4450669AA} = {7AC18875-0F46-4997-B71D-0DAB980F63DA}
+		{8CA2B58C-5DC3-4B6B-98A9-392DFFB2CDEE} = {8929E57D-7A58-423E-93A5-231203EEC685}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {39ED56A3-9F2A-47A4-8EC1-F92D78CD7D0C}
