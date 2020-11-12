@@ -32,8 +32,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             response.EnsureCorsAllowOriginHeader(client.BaseAddress);
             (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(string.Empty);
 
-            mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Never);
-            mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Never);
+            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -64,8 +63,9 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             response.EnsureCorsAllowOriginHeader((string)null);
             (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo("[]");
 
-            mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Never);
+            mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
+            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -97,8 +97,9 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             jsonContent.GetProperty("type").GetString().Should().Be("https://tools.ietf.org/html/rfc7231#section-6.5.1");
             jsonContent.GetProperty("traceId").GetString().Should().NotBeNullOrEmpty();
 
-            mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Never);
+            mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
+            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -126,8 +127,9 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             response.EnsureCorsAllowOriginHeader(client.BaseAddress);
             (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo("[]");
 
-            mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Never);
+            mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
+            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -163,8 +165,9 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
                     new { id = contact1.Id, fullName = contact1.ContactName, phoneNumber = contact1.ContactPhoneNumber.Value },
                     new { id = contact2.Id, fullName = contact2.ContactName, phoneNumber = contact2.ContactPhoneNumber.Value }}));
 
-            mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Never);
+            mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
+            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
     }
 }
