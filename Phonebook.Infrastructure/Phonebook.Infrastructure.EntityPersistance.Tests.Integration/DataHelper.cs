@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Transactions;
 
 namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
 {
@@ -55,19 +56,23 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
         internal static void DeleteUserPhonebook(int userPhonebookId)
         {
             using var connection = new SqlConnection(GetConnectionString());
+            using var transactionScope = new TransactionScope();
 
             connection.Execute(
-                "DELETE FROM Contact WHERE UserPhonebookId = @UserPhonebookId",
-                new { UserPhonebookId = userPhonebookId });
+            "DELETE FROM Contact WHERE UserPhonebookId = @UserPhonebookId",
+            new { UserPhonebookId = userPhonebookId });
 
             connection.Execute(
                 "DELETE FROM UserPhonebook WHERE Id = @Id",
                 new { Id = userPhonebookId });
+
+            transactionScope.Complete();
         }
 
         internal static void SaveUserPhonebook(UserPhonebookData userPhonebook)
         {
             using var connection = new SqlConnection(GetConnectionString());
+            using var transactionScope = new TransactionScope();
 
             userPhonebook.Id = connection.Query<int>(
                 @"INSERT INTO UserPhonebook (OwnerUserId) VALUES (@OwnerUserId)
@@ -86,6 +91,9 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                         ContactPhoneNumber = contact.ContactPhoneNumber.ToString()
                 }).Single();
             }
+
+            transactionScope.Complete();
+
         }
 
         internal static string GetRandomString(int length)
