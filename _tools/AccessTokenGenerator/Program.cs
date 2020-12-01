@@ -20,7 +20,7 @@ namespace AccessTokenGenerator
             Console.WriteLine("Enter the token issuer");
             var issuer = Console.ReadLine();
 
-            Console.WriteLine("Enter the token audience key");
+            Console.WriteLine("Enter the token audience");
             var audience = Console.ReadLine();
 
             Console.WriteLine(GenerateToken(userId, signingKey, issuer, audience));

@@ -61,7 +61,7 @@ namespace PhoneBook.Api
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = _configuration.GetValue<string>("Authorization:JwtTokenIssuer"),
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Authorization:JwtTokenSigningKey"))),
+                        Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Authorization:JwtTokenSigningKey")))
                 };
             });
 

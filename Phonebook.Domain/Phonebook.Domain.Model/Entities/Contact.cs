@@ -6,7 +6,7 @@ namespace Phonebook.Domain.Model.Entities
     {
         protected Contact() { }
 
-        public Contact(string contactName, PhoneNumber contactPhoneNumber)
+        public Contact(string contactName, PhoneNumber contactPhoneNumber) : this()
         {
             ContactName = contactName;
             ContactPhoneNumber = contactPhoneNumber;
