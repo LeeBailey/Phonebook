@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Moq;
 using Phonebook.Api.Tests.Unit.TestFramework;
 using Phonebook.Domain.Model.Entities;
@@ -9,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -17,17 +19,24 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 {
     public class PostNewContactTests
     {
+        private readonly IHost _host;
+        private readonly HttpClient _httpClient;
+        private readonly MockServices _mockServices;
+
+        public PostNewContactTests()
+        {
+            _host = TestSetup.CreateHost();
+            _httpClient = _host.GetTestClient();
+            _mockServices = _host.Services.GetRequiredService<MockServices>();
+        }
+
         [Fact]
         public async Task GivenUserIsNotAuthenticated_WhenNewContactIsPosted_ThenUnauthorizedIsReturned()
         {
             // Arrange
-            var host = TestSetup.CreateHost();
-            var client = host.GetTestClient();
-
             var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
 
-            var mockServices = host.Services.GetRequiredService<MockServices>();
-            mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
+            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                 .Returns(Task.FromResult(userPhonebook));
 
             var postData = new Dictionary<string, string>
@@ -37,18 +46,18 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             };
 
             // Act
-            var response = await client.SendAsync(
+            var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(client.BaseAddress.ToString(), "phonebook/contacts"),
+                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
                     null,
                     postData));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-            response.EnsureCorsAllowOriginHeader(client.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
             (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(string.Empty);
 
-            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -58,16 +67,13 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             const string disallowedOrigin = "https://disallowedorigin.com";
             var newContactName = TestSetup.GetRandomString(10);
             var newContactPhoneNumber = TestSetup.GetRandomPhoneNumber().ToString();
-            var host = TestSetup.CreateHost();
-            var client = host.GetTestClient();
 
             var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
 
-            var mockServices = host.Services.GetRequiredService<MockServices>();
-            mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
+            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                 .Returns(Task.FromResult(userPhonebook));
 
-            mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            _mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Callback(() =>
                 {
                     // Assert
@@ -84,9 +90,9 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             };
 
             // Act
-            var response = await client.SendAsync(
+            var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(client.BaseAddress.ToString(), "phonebook/contacts"),
+                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
                     userPhonebook.OwnerUserId,
                     postData,
                     disallowedOrigin));
@@ -97,10 +103,10 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             response.EnsureSuccessStatusCode();
             response.EnsureCorsAllowOriginHeader((string)null);
 
-            mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebook.OwnerUserId), Times.Once);
-            mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
-            mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
-            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+            _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebook.OwnerUserId), Times.Once);
+            _mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
+            _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
+            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -108,11 +114,8 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         {
             // Arrange
             var userId = TestSetup.GetRandomInt();
-            var host = TestSetup.CreateHost();
-            var client = host.GetTestClient();
 
-            var mockServices = host.Services.GetRequiredService<MockServices>();
-            mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userId))
+            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userId))
                 .Returns(Task.FromResult<UserPhonebook>(null));
 
             var postData = new Dictionary<string, string>
@@ -122,19 +125,19 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             };
 
             // Act
-            var response = await client.SendAsync(
+            var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(client.BaseAddress.ToString(), "phonebook/contacts"),
+                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
                     userId,
                     postData));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            response.EnsureCorsAllowOriginHeader(client.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
 
-            mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userId), Times.Once);
-            mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
-            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+            _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userId), Times.Once);
+            _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
+            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
         public class InvalidPostParameters : IEnumerable<object[]>
@@ -166,14 +169,9 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             string contactFullName, string contactPhoneNumber)
         {
             // Arrange
-            var host = TestSetup.CreateHost();
-            var client = host.GetTestClient();
-
-            var mockServices = host.Services.GetRequiredService<MockServices>();
-
             var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
 
-            mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
+            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                 .Returns(Task.FromResult(userPhonebook));
 
             var postData = new Dictionary<string, string>
@@ -183,18 +181,18 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             };
 
             // Act
-            var response = await client.SendAsync(
+            var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(client.BaseAddress.ToString(), "phonebook/contacts"),
+                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
                     userPhonebook.OwnerUserId,
                     postData));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             await response.EnsureBadRequestContent("One or more validation errors occurred.");
-            response.EnsureCorsAllowOriginHeader(client.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
 
-            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -203,16 +201,13 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             // Arrange
             var newContactName = TestSetup.GetRandomString(10);
             var newContactPhoneNumber = TestSetup.GetRandomPhoneNumber().ToString();
-            var host = TestSetup.CreateHost();
-            var client = host.GetTestClient();
 
             var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
 
-            var mockServices = host.Services.GetRequiredService<MockServices>();
-            mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
+            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                 .Returns(Task.FromResult(userPhonebook));
 
-            mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            _mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Callback(() =>
             {
                     // Assert
@@ -229,20 +224,20 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             };
 
             // Act
-            var response = await client.SendAsync(
+            var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(client.BaseAddress.ToString(), "phonebook/contacts"),
+                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
                     userPhonebook.OwnerUserId,
                     postData));
 
             // Assert
             response.EnsureSuccessStatusCode();
-            response.EnsureCorsAllowOriginHeader(client.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
 
-            mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebook.OwnerUserId), Times.Once);
-            mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
-            mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
-            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+            _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebook.OwnerUserId), Times.Once);
+            _mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
+            _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
+            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -252,17 +247,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var existingContact = new Contact(TestSetup.GetRandomString(20), TestSetup.GetRandomPhoneNumber());
             var newContactName = TestSetup.GetRandomString(20);
             var newContactPhoneNumber = TestSetup.GetRandomPhoneNumber().ToString();
-            var host = TestSetup.CreateHost();
-            var client = host.GetTestClient();
 
             var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
             userPhonebook.Contacts.Add(existingContact);
 
-            var mockServices = host.Services.GetRequiredService<MockServices>();
-            mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
+            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                 .Returns(Task.FromResult(userPhonebook));
 
-            mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            _mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Callback(() =>
             {
                     // Assert
@@ -280,30 +272,26 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             };
 
             // Act
-            var response = await client.SendAsync(
+            var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(client.BaseAddress.ToString(), "phonebook/contacts"),
+                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
                     userPhonebook.OwnerUserId,
                     postData));
 
             // Assert
             response.EnsureSuccessStatusCode();
-            response.EnsureCorsAllowOriginHeader(client.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
 
-            mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebook.OwnerUserId), Times.Once);
-            mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
-            mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
-            mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+            _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebook.OwnerUserId), Times.Once);
+            _mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
+            _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
+            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
         [Fact]
         public async Task GivenUserPhonebookExistsAndParamtersAreValid_WhenNewContactIsPostedMultipleTimes_ThenContactIsCreatedAndOkIsReturned()
         {
             // Arrange
-            var host = TestSetup.CreateHost();
-            var client = host.GetTestClient();
-            var mockServices = host.Services.GetRequiredService<MockServices>();
-
             var userPhonebooks = new List<UserPhonebook>();
             var newContactName = TestSetup.GetRandomString(10);
             var newContactPhoneNumber = TestSetup.GetRandomPhoneNumber().ToString();
@@ -312,10 +300,10 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             {
                 var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
                 userPhonebooks.Add(userPhonebook);
-                mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
+                _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                     .Returns(Task.FromResult(userPhonebook));
 
-                mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                _mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Callback(() =>
                 {
                     // Assert
@@ -332,20 +320,20 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
                 };
 
                 // Act
-                var response = await client.SendAsync(
+                var response = await _httpClient.SendAsync(
                     TestSetup.CreateHttpRequestMessage(
-                        Path.Combine(client.BaseAddress.ToString(), "phonebook/contacts"),
+                        Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
                         userPhonebooks[i].OwnerUserId,
                         postData));
 
                 // Assert
                 response.EnsureSuccessStatusCode();
-                response.EnsureCorsAllowOriginHeader(client.BaseAddress);
+                response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
 
-                mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebooks[i].OwnerUserId), Times.Once);
-                mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(() => Times.Exactly(i + 1));
-                mockServices.MockPhonebookDbContext.EnsureDisposeCalled(() => Times.Exactly(i + 1));
-                mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+                _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebooks[i].OwnerUserId), Times.Once);
+                _mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(() => Times.Exactly(i + 1));
+                _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(() => Times.Exactly(i + 1));
+                _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
             }
         }
     }
