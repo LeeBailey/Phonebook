@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Phonebook.Api.Tests.Unit.TestFramework
 {
@@ -27,6 +29,16 @@ namespace Phonebook.Api.Tests.Unit.TestFramework
                 response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault()
                     .Should().BeEquivalentTo(expectedHeaderValue.TrimEnd('/'));
             }
+        }
+
+        public static async Task EnsureBadRequestContent(this HttpResponseMessage response, string expectedTitle)
+        {
+            var jsonContent = JsonSerializer.Deserialize<JsonElement>
+                (await response.Content.ReadAsStringAsync());
+            jsonContent.GetProperty("status").GetInt32().Should().Be(400);
+            jsonContent.GetProperty("title").GetString().Should().Be(expectedTitle);
+            jsonContent.GetProperty("type").GetString().Should().Be("https://tools.ietf.org/html/rfc7231#section-6.5.1");
+            jsonContent.GetProperty("traceId").GetString().Should().NotBeNullOrEmpty();
         }
     }
 }

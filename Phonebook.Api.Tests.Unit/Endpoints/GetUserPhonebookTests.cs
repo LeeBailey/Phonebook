@@ -88,14 +88,8 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            await response.EnsureBadRequestContent("Bad Request");
             response.EnsureCorsAllowOriginHeader(client.BaseAddress);
-
-            var jsonContent = JsonSerializer.Deserialize<JsonElement>
-                (await response.Content.ReadAsStringAsync());
-            jsonContent.GetProperty("status").GetInt32().Should().Be(400);
-            jsonContent.GetProperty("title").GetString().Should().Be("Bad Request");
-            jsonContent.GetProperty("type").GetString().Should().Be("https://tools.ietf.org/html/rfc7231#section-6.5.1");
-            jsonContent.GetProperty("traceId").GetString().Should().NotBeNullOrEmpty();
 
             mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
