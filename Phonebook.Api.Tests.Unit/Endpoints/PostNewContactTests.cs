@@ -9,7 +9,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -217,7 +216,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             .Callback(() =>
             {
                     // Assert
-                userPhonebook.Contacts.Should().BeEquivalentTo(new List<Contact>
+                userPhonebook.Contacts.Should().BeEquivalentTo(new []
                 {
                     new Contact(newContactName, new PhoneNumber(newContactPhoneNumber))
                 });
@@ -295,6 +294,59 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
             mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
             mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task GivenUserPhonebookExistsAndParamtersAreValid_WhenNewContactIsPostedMultipleTimes_ThenContactIsCreatedAndOkIsReturned()
+        {
+            // Arrange
+            var host = TestSetup.CreateHost();
+            var client = host.GetTestClient();
+            var mockServices = host.Services.GetRequiredService<MockServices>();
+
+            var userPhonebooks = new List<UserPhonebook>();
+            var newContactName = TestSetup.GetRandomString(10);
+            var newContactPhoneNumber = TestSetup.GetRandomPhoneNumber().ToString();
+
+            for (int i = 0; i < 100; i++)
+            {
+                var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
+                userPhonebooks.Add(userPhonebook);
+                mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
+                    .Returns(Task.FromResult(userPhonebook));
+
+                mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .Callback(() =>
+                {
+                    // Assert
+                    userPhonebooks[i].Contacts.Should().BeEquivalentTo(new[]
+                    {
+                        new Contact(newContactName, new PhoneNumber(newContactPhoneNumber))
+                    });
+                });
+
+                var postData = new Dictionary<string, string>
+                {
+                    { "contactFullName", newContactName },
+                    { "contactPhoneNumber", newContactPhoneNumber }
+                };
+
+                // Act
+                var response = await client.SendAsync(
+                    TestSetup.CreateHttpRequestMessage(
+                        Path.Combine(client.BaseAddress.ToString(), "phonebook/contacts"),
+                        userPhonebooks[i].OwnerUserId,
+                        postData));
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                response.EnsureCorsAllowOriginHeader(client.BaseAddress);
+
+                mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebooks[i].OwnerUserId), Times.Once);
+                mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(() => Times.Exactly(i + 1));
+                mockServices.MockPhonebookDbContext.EnsureDisposeCalled(() => Times.Exactly(i + 1));
+                mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+            }
         }
     }
 }

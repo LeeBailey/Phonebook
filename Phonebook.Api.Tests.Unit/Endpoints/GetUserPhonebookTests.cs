@@ -5,6 +5,7 @@ using Moq;
 using Phonebook.Api.Tests.Unit.TestFramework;
 using Phonebook.Domain.Model.Entities;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -126,21 +127,23 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
-        public async Task GivenUserHasPhonebookWithContacts_WhenGetAllIsRequested_ThenContactsAreReturned()
+        [Theory]
+        [InlineData(1)]
+        [InlineData(1000)]
+        public async Task GivenUserHasPhonebookWithContacts_WhenGetAllIsRequested_ThenContactsAreReturned(int noOfContacts)
         {
             // Arrange
             var randomUserId = TestSetup.GetRandomInt();
             var host = TestSetup.CreateHost();
             var client = host.GetTestClient();
-
             var mockServices = host.Services.GetRequiredService<MockServices>();
-            var contact1 = new Contact(TestSetup.GetRandomString(20), TestSetup.GetRandomPhoneNumber())
-                .WithIdSetToRandomInteger();
-            var contact2 = new Contact(TestSetup.GetRandomString(20), TestSetup.GetRandomPhoneNumber())
-                .WithIdSetToRandomInteger();
 
-            var userPhonebook = new UserPhonebook(randomUserId) { Contacts = { contact1, contact2 } };
+            var userPhonebook = new UserPhonebook(randomUserId);
+            for (int i = 0; i < noOfContacts; i++)
+            {
+                userPhonebook.Contacts.Add(new Contact(TestSetup.GetRandomString(20), TestSetup.GetRandomPhoneNumber())
+                    .WithIdSetToRandomInteger());
+            }
 
             mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
                 .Returns(Task.FromResult(userPhonebook));
@@ -155,13 +158,66 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             response.EnsureSuccessStatusCode();
             response.EnsureCorsAllowOriginHeader(client.BaseAddress);
             (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(
-                JsonSerializer.Serialize(new[] {
-                    new { id = contact1.Id, fullName = contact1.ContactName, phoneNumber = contact1.ContactPhoneNumber.Value },
-                    new { id = contact2.Id, fullName = contact2.ContactName, phoneNumber = contact2.ContactPhoneNumber.Value }}));
+                JsonSerializer.Serialize(userPhonebook.Contacts.Select(x =>
+                    new { id = x.Id, fullName = x.ContactName, phoneNumber = x.ContactPhoneNumber.Value })
+            ));
 
             mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
             mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task GivenMultipleUserPhonebooksWithContacts_WhenGetAllIsRequestedMultipleTimes_ThenContactsAreReturnedCorrectly()
+        {
+            // Arrange
+            var multiplier = 50;
+            var host = TestSetup.CreateHost();
+            var client = host.GetTestClient();
+            var mockServices = host.Services.GetRequiredService<MockServices>();
+
+            for (int i = 0; i < multiplier; i++)
+            {
+                var randomUserId = TestSetup.GetRandomInt();
+                var contact1 = new Contact(TestSetup.GetRandomString(20), TestSetup.GetRandomPhoneNumber())
+                    .WithIdSetToRandomInteger();
+                var contact2 = new Contact(TestSetup.GetRandomString(20), TestSetup.GetRandomPhoneNumber())
+                    .WithIdSetToRandomInteger();
+
+                var userPhonebook = new UserPhonebook(randomUserId) { Contacts = { contact1, contact2 } };
+
+                mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
+                    .Returns(Task.FromResult(userPhonebook));
+
+                // Act
+                var response = await client.SendAsync(
+                    TestSetup.CreateHttpRequestMessage(
+                        Path.Combine(client.BaseAddress.ToString(), "phonebook"),
+                        randomUserId));
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                response.EnsureCorsAllowOriginHeader(client.BaseAddress);
+                (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(
+                    JsonSerializer.Serialize(new[] {
+                        new 
+                        { 
+                            id = contact1.Id,
+                            fullName = contact1.ContactName,
+                            phoneNumber = contact1.ContactPhoneNumber.Value
+                        },
+                        new 
+                        { 
+                            id = contact2.Id,
+                            fullName = contact2.ContactName,
+                            phoneNumber = contact2.ContactPhoneNumber.Value 
+                        }
+                    }));
+
+                mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
+                mockServices.MockPhonebookDbContext.EnsureDisposeCalled(() => Times.Exactly(i + 1));
+                mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+            }
         }
     }
 }
