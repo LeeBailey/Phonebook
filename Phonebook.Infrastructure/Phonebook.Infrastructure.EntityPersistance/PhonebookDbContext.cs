@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Phonebook.Domain.Infrastructure.Abstractions.EntityPersistance;
 using Phonebook.Domain.Model.Entities;
+using System;
 using System.Threading.Tasks;
 
 namespace Phonebook.Infrastructure.EntityPersistance
@@ -13,7 +14,7 @@ namespace Phonebook.Infrastructure.EntityPersistance
 
         protected DbSet<UserPhonebook> UserPhonebooks { get; set; }
 
-        public async Task<UserPhonebook> GetUserPhonebook(int ownerUserId)
+        public async Task<UserPhonebook> GetUserPhonebook(Guid ownerUserId)
         {
             return await UserPhonebooks
                 .Include(x => x.Contacts)

@@ -31,7 +31,7 @@ namespace Phonebook.Api.Tests.Unit.TestFramework
                         { "Authorization:JwtTokenAudience", _authJwtTokenAudience },
                         { "Authorization:JwtTokenIssuer", _authJwtTokenIssuer },
                         { "CorsAllowedOrigins:1", "http://localhost" },
-                        { "CorsAllowedOrigins:2", "http://localhost:3000" } 
+                        { "CorsAllowedOrigins:2", "http://localhost:3000" }
                     })
                 .Build();
 
@@ -45,7 +45,7 @@ namespace Phonebook.Api.Tests.Unit.TestFramework
             return hostBuilder.Start();
         }
 
-        public static string GenerateToken(int userId)
+        public static string GenerateToken(Guid userId)
         {
             var claims = new List<Claim>() {
                 new Claim("UserId", userId.ToString()),
@@ -68,7 +68,7 @@ namespace Phonebook.Api.Tests.Unit.TestFramework
 
         public static HttpRequestMessage CreateHttpRequestMessage(
             string requestUri,
-            int? userId = null,
+            Guid? userId = null,
             object postData = null,
             string origin = "http://localhost")
         {

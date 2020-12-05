@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Phonebook.Domain.Model.Entities
 {
@@ -9,14 +10,14 @@ namespace Phonebook.Domain.Model.Entities
             Contacts = new List<Contact>();
         }
 
-        public UserPhonebook(int ownerUserId) : this()
+        public UserPhonebook(Guid ownerUserId) : this()
         {
             OwnerUserId = ownerUserId;
         }
 
         public int Id { get; protected set; }
 
-        public int OwnerUserId { get; protected set; }
+        public Guid OwnerUserId { get; protected set; }
 
         public ICollection<Contact> Contacts { get; protected set; }
     }

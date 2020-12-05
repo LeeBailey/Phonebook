@@ -20,7 +20,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
             using var context = dbContextFactory.Create();
 
             // Act
-            var result = await context.GetUserPhonebook(DataHelper.GetRandomInt());
+            var result = await context.GetUserPhonebook(Guid.NewGuid());
 
             // Assert
             result.Should().BeNull();
@@ -30,18 +30,18 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
         public async Task GivenPhonebookWithNoContactsExists_WhenGetUserPhonebookIsCalled_ThenThePhonebookIsReturned()
         {
             // Arrange
-            var ownerUserId = DataHelper.GetRandomInt();
+            var randomUserId = Guid.NewGuid();
             var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
             using var context = dbContextFactory.Create();
 
-            var existingPhonebook = new UserPhonebookData { OwnerUserId = ownerUserId };
+            var existingPhonebook = new UserPhonebookData { OwnerUserId = randomUserId };
 
             try
             {
                 DataHelper.SaveUserPhonebook(existingPhonebook);
 
                 // Act
-                var result = await context.GetUserPhonebook(ownerUserId);
+                var result = await context.GetUserPhonebook(randomUserId);
 
                 // Assert
                 result.Should().BeEquivalentTo(existingPhonebook);
@@ -56,7 +56,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
         public async Task GivenPhonebookWithContactsExists_WhenGetUserPhonebookIsCalled_ThenThePhonebookAndContactsAreReturned()
         {
             // Arrange
-            var ownerUserId = DataHelper.GetRandomInt();
+            var ownerUserId = Guid.NewGuid();
             var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
             using var context = dbContextFactory.Create();
 
@@ -91,8 +91,8 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
         public async Task GivenPhonebooksForDifferentUsersExist_WhenGetUserPhonebookIsCalled_ThenOnlyTheCorrectContactsAreReturned()
         {
             // Arrange
-            var ownerUserId = DataHelper.GetRandomInt();
-            var differentUserId = DataHelper.GetRandomInt();
+            var ownerUserId = Guid.NewGuid();
+            var differentUserId = Guid.NewGuid();
             var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
             using var context = dbContextFactory.Create();
 
@@ -148,7 +148,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
 
             var existingPhonebook = new UserPhonebookData
             {
-                OwnerUserId = DataHelper.GetRandomInt()
+                OwnerUserId = Guid.NewGuid()
             };
 
             try
@@ -179,7 +179,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
         public async Task GivenPhonebookWithNoContactsExists_WhenNewContactIsAddedAndSaveChangesIsCalled_ThenNewContactIsSaved()
         {
             // Arrange
-            var ownerUserId = DataHelper.GetRandomInt();
+            var ownerUserId = Guid.NewGuid();
             var newContactName = DataHelper.GetRandomString(15);
             var newContactPhoneNumber = DataHelper.GetRandomPhoneNumber();
             var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());
@@ -219,7 +219,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
         public async Task GivenPhonebookWithContactsExists_WhenNewContactIsAddedAndSaveChangesIsCalled_ThenNewContactIsSaved()
         {
             // Arrange
-            var ownerUserId = DataHelper.GetRandomInt();
+            var ownerUserId = Guid.NewGuid();
             var newContactName = DataHelper.GetRandomString(15);
             var newContactPhoneNumber = DataHelper.GetRandomPhoneNumber();
             var dbContextFactory = new PhonebookDbContextFactory(DataHelper.GetConnectionString());

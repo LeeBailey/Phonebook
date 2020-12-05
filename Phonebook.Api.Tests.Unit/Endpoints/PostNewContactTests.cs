@@ -6,6 +6,7 @@ using Moq;
 using Phonebook.Api.Tests.Unit.TestFramework;
 using Phonebook.Domain.Model.Entities;
 using Phonebook.Domain.Model.ValueObjects;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -36,7 +37,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         public async Task GivenUserIsNotAuthenticated_WhenNewContactIsPosted_ThenUnauthorizedIsReturned()
         {
             // Arrange
-            var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
+            var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                 .Returns(Task.FromResult(userPhonebook));
@@ -70,7 +71,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var newContactName = TestSetup.GetRandomString(10);
             var newContactPhoneNumber = TestSetup.GetRandomPhoneNumber().ToString();
 
-            var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
+            var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                 .Returns(Task.FromResult(userPhonebook));
@@ -115,9 +116,9 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         public async Task GivenUserPhonebookDoesntExist_WhenNewContactIsPosted_ThenBadRequestIsReturned()
         {
             // Arrange
-            var userId = TestSetup.GetRandomInt();
+            var randomUserId = Guid.NewGuid();
 
-            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userId))
+            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
                 .Returns(Task.FromResult<UserPhonebook>(null));
 
             var postData = new Dictionary<string, string>
@@ -130,14 +131,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
                     Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
-                    userId,
+                    randomUserId,
                     postData));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
 
-            _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userId), Times.Once);
+            _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
@@ -171,7 +172,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             string contactFullName, string contactPhoneNumber)
         {
             // Arrange
-            var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
+            var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                 .Returns(Task.FromResult(userPhonebook));
@@ -204,7 +205,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var newContactName = TestSetup.GetRandomString(10);
             var newContactPhoneNumber = TestSetup.GetRandomPhoneNumber().ToString();
 
-            var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
+            var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                 .Returns(Task.FromResult(userPhonebook));
@@ -250,7 +251,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var newContactName = TestSetup.GetRandomString(20);
             var newContactPhoneNumber = TestSetup.GetRandomPhoneNumber().ToString();
 
-            var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
+            var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
             userPhonebook.Contacts.Add(existingContact);
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
@@ -300,7 +301,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             for (int i = 0; i < 100; i++)
             {
-                var userPhonebook = new UserPhonebook(TestSetup.GetRandomInt()).WithIdSetToRandomInteger();
+                var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
                 userPhonebooks.Add(userPhonebook);
                 _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
                     .Returns(Task.FromResult(userPhonebook));

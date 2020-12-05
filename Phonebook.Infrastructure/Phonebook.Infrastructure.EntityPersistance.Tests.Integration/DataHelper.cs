@@ -28,7 +28,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
             var userPhonebook = connection.Query(
                 "SELECT * FROM UserPhonebook WHERE Id = @Id",
                 new { Id = userPhonebookId })
-                .Select(row => new UserPhonebookData() { Id = (int)row.Id, OwnerUserId = (int)row.OwnerUserId })
+                .Select(row => new UserPhonebookData() { Id = (int)row.Id, OwnerUserId = (Guid)row.OwnerUserId })
                 .FirstOrDefault();
 
             if (userPhonebook is null)
@@ -127,7 +127,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
 
         public int Id { get; set; }
 
-        public int OwnerUserId { get; set; }
+        public Guid OwnerUserId { get; set; }
 
         public IEnumerable<ContactData> Contacts { get; set; }
     }

@@ -1,11 +1,12 @@
 ﻿using Phonebook.Domain.Model.ValueObjects;
+using System;
 
 namespace Phonebook.Domain.ApplicationServices.Commands
 {
     public class CreateNewContactDto
     {
         public CreateNewContactDto(
-            int ownerUserId,
+            Guid ownerUserId,
             string contactFullName,
             PhoneNumber contactPhoneNumber)
         {
@@ -14,7 +15,7 @@ namespace Phonebook.Domain.ApplicationServices.Commands
             ContactPhoneNumber = contactPhoneNumber;
         }
 
-        public int OwnerUserId { get; set; }
+        public Guid OwnerUserId { get; set; }
         
         public string ContactFullName { get; protected set; }
 

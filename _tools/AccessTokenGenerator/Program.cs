@@ -12,7 +12,7 @@ namespace AccessTokenGenerator
         static void Main(string[] args)
         {
             Console.WriteLine("Enter a userId:");
-            var userId = int.Parse(Console.ReadLine());
+            var userId = Guid.Parse(Console.ReadLine());
 
             Console.WriteLine("Enter the token signing key");
             var signingKey = Console.ReadLine();
@@ -26,7 +26,7 @@ namespace AccessTokenGenerator
             Console.WriteLine(GenerateToken(userId, signingKey, issuer, audience));
         }
 
-        public static string GenerateToken(int userId, string signingKey, string issuer, string audience)
+        public static string GenerateToken(Guid userId, string signingKey, string issuer, string audience)
         {
             var claims = new List<Claim>() {
                 new Claim("UserId", userId.ToString()),

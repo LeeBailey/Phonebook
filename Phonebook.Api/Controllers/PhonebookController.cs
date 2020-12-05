@@ -6,6 +6,7 @@ using Phonebook.Domain.ApplicationServices;
 using Phonebook.Domain.ApplicationServices.Commands;
 using Phonebook.Domain.ApplicationServices.Queries;
 using Phonebook.Domain.Model.ValueObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -68,9 +69,9 @@ namespace PhoneBook.Api.Controllers
             return BadRequest(ModelState);
         }
 
-        private int GetUserId()
+        private Guid GetUserId()
         {
-            return int.Parse(User.Claims.First(i => i.Type == "UserId").Value);
+            return Guid.Parse(User.Claims.First(i => i.Type == "UserId").Value);
         }
     }
 }

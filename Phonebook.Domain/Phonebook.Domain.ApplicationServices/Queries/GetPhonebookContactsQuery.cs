@@ -1,4 +1,5 @@
 ﻿using Phonebook.Domain.Infrastructure.Abstractions.EntityPersistance;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Phonebook.Domain.ApplicationServices.Queries
             _phonebookDbContextFactory = phonebookDbContextFactory;
         }
 
-        public async Task<IEnumerable<PhonebookContactDto>> Execute(int ownerUserId)
+        public async Task<IEnumerable<PhonebookContactDto>> Execute(Guid ownerUserId)
         {
             using var phonebookDbContext = _phonebookDbContextFactory.Create();
 

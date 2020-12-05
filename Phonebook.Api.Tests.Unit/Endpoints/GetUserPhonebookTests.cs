@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using Phonebook.Api.Tests.Unit.TestFramework;
 using Phonebook.Domain.Model.Entities;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -49,7 +50,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         {
             // Arrange
             const string disallowedOrigin = "https://disallowedorigin.com";
-            var randomUserId = TestSetup.GetRandomInt();
+            var randomUserId = Guid.NewGuid();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
                 .Returns(Task.FromResult(new UserPhonebook(randomUserId)));
@@ -76,7 +77,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         public async Task GivenUserPhonebookDoesNotExist_WhenGetAllIsRequested_ThenBadRequestIsReturned()
         {
             // Arrange
-            var randomUserId = TestSetup.GetRandomInt();
+            var randomUserId = Guid.NewGuid();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
                 .Returns(Task.FromResult<UserPhonebook>(null));
@@ -101,7 +102,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         public async Task GivenUserHasPhonebookButNoContacts_WhenGetAllIsRequested_ThenAnEmptyCollectionIsReturned()
         {
             // Arrange
-            var randomUserId = TestSetup.GetRandomInt();
+            var randomUserId = Guid.NewGuid();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
                 .Returns(Task.FromResult(new UserPhonebook(randomUserId)));
@@ -128,7 +129,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         public async Task GivenUserHasPhonebookWithContacts_WhenGetAllIsRequested_ThenContactsAreReturned(int noOfContacts)
         {
             // Arrange
-            var randomUserId = TestSetup.GetRandomInt();
+            var randomUserId = Guid.NewGuid();
 
             var userPhonebook = new UserPhonebook(randomUserId);
             for (int i = 0; i < noOfContacts; i++)
@@ -167,7 +168,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             for (int i = 0; i < multiplier; i++)
             {
-                var randomUserId = TestSetup.GetRandomInt();
+                var randomUserId = Guid.NewGuid();
                 var contact1 = new Contact(TestSetup.GetRandomString(20), TestSetup.GetRandomPhoneNumber())
                     .WithIdSetToRandomInteger();
                 var contact2 = new Contact(TestSetup.GetRandomString(20), TestSetup.GetRandomPhoneNumber())
