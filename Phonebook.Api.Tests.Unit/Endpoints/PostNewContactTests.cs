@@ -22,6 +22,8 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         private readonly IHost _host;
         private readonly HttpClient _httpClient;
         private readonly MockServices _mockServices;
+        private const string contactFullNameParamName = "contactFullName";
+        private const string contactPhoneNumberParamName = "contactPhoneNumber";
 
         public PostNewContactTests()
         {
@@ -41,8 +43,8 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { "contactFullName", TestSetup.GetRandomString(20) },
-                { "contactPhoneNumber", TestSetup.GetRandomPhoneNumber().ToString() }
+                { contactFullNameParamName, TestSetup.GetRandomString(20) },
+                { contactPhoneNumberParamName, TestSetup.GetRandomPhoneNumber().ToString() }
             };
 
             // Act
@@ -85,8 +87,8 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { "contactFullName", newContactName },
-                { "contactPhoneNumber", newContactPhoneNumber }
+                { contactFullNameParamName, newContactName },
+                { contactPhoneNumberParamName, newContactPhoneNumber }
             };
 
             // Act
@@ -120,8 +122,8 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { "contactFullName", TestSetup.GetRandomString(20) },
-                { "contactPhoneNumber", TestSetup.GetRandomPhoneNumber().ToString() }
+                { contactFullNameParamName, TestSetup.GetRandomString(20) },
+                { contactPhoneNumberParamName, TestSetup.GetRandomPhoneNumber().ToString() }
             };
 
             // Act
@@ -176,8 +178,8 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { "contactFullName", contactFullName },
-                { "contactPhoneNumber", contactPhoneNumber }
+                { contactFullNameParamName, contactFullName },
+                { contactPhoneNumberParamName, contactPhoneNumber }
             };
 
             // Act
@@ -219,8 +221,8 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { "contactFullName", newContactName },
-                { "contactPhoneNumber", newContactPhoneNumber }
+                { contactFullNameParamName, newContactName },
+                { contactPhoneNumberParamName, newContactPhoneNumber }
             };
 
             // Act
@@ -267,8 +269,8 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { "contactFullName", newContactName },
-                { "contactPhoneNumber", newContactPhoneNumber }
+                { contactFullNameParamName, newContactName },
+                { contactPhoneNumberParamName, newContactPhoneNumber }
             };
 
             // Act
@@ -315,8 +317,8 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
                 var postData = new Dictionary<string, string>
                 {
-                    { "contactFullName", newContactName },
-                    { "contactPhoneNumber", newContactPhoneNumber }
+                    { contactFullNameParamName, newContactName },
+                    { contactPhoneNumberParamName, newContactPhoneNumber }
                 };
 
                 // Act
