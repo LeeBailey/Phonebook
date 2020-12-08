@@ -21,12 +21,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         private readonly IHost _host;
         private readonly HttpClient _httpClient;
         private readonly MockServices _mockServices;
+        private readonly string _requestUri;
 
         public GetUserPhonebookTests()
         {
             _host = TestSetup.CreateHost();
             _httpClient = _host.GetTestClient();
             _mockServices = _host.Services.GetRequiredService<MockServices>();
+            _requestUri = Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook");
         }
 
         [Fact]
@@ -34,8 +36,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         {
             // Act
             var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook")));
+                TestSetup.CreateHttpRequestMessage(_requestUri));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -58,7 +59,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook"),
+                    _requestUri,
                     randomUserId,
                     null,
                     disallowedOrigin));
@@ -85,7 +86,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook"), 
+                    _requestUri, 
                     randomUserId));
 
             // Assert
@@ -110,7 +111,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook"),
+                    _requestUri,
                     randomUserId));
 
             // Assert
@@ -144,7 +145,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook"),
+                    _requestUri,
                     randomUserId));
 
             // Assert
@@ -182,7 +183,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
                 // Act
                 var response = await _httpClient.SendAsync(
                     TestSetup.CreateHttpRequestMessage(
-                        Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook"),
+                        _requestUri,
                         randomUserId));
 
                 // Assert

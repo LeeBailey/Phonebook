@@ -23,14 +23,16 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         private readonly IHost _host;
         private readonly HttpClient _httpClient;
         private readonly MockServices _mockServices;
-        private const string contactFullNameParamName = "contactFullName";
-        private const string contactPhoneNumberParamName = "contactPhoneNumber";
+        private readonly string _requestUri;
+        private const string ContactFullNameParamName = "contactFullName";
+        private const string ContactPhoneNumberParamName = "contactPhoneNumber";
 
         public PostNewContactTests()
         {
             _host = TestSetup.CreateHost();
             _httpClient = _host.GetTestClient();
             _mockServices = _host.Services.GetRequiredService<MockServices>();
+            _requestUri = Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts");
         }
 
         [Fact]
@@ -44,14 +46,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { contactFullNameParamName, TestSetup.GetRandomString(20) },
-                { contactPhoneNumberParamName, TestSetup.GetRandomPhoneNumber().ToString() }
+                { ContactFullNameParamName, TestSetup.GetRandomString(20) },
+                { ContactPhoneNumberParamName, TestSetup.GetRandomPhoneNumber().ToString() }
             };
 
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
+                    _requestUri,
                     null,
                     postData));
 
@@ -88,14 +90,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { contactFullNameParamName, newContactName },
-                { contactPhoneNumberParamName, newContactPhoneNumber }
+                { ContactFullNameParamName, newContactName },
+                { ContactPhoneNumberParamName, newContactPhoneNumber }
             };
 
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
+                    _requestUri,
                     userPhonebook.OwnerUserId,
                     postData,
                     disallowedOrigin));
@@ -123,14 +125,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { contactFullNameParamName, TestSetup.GetRandomString(20) },
-                { contactPhoneNumberParamName, TestSetup.GetRandomPhoneNumber().ToString() }
+                { ContactFullNameParamName, TestSetup.GetRandomString(20) },
+                { ContactPhoneNumberParamName, TestSetup.GetRandomPhoneNumber().ToString() }
             };
 
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
+                    _requestUri,
                     randomUserId,
                     postData));
 
@@ -179,14 +181,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { contactFullNameParamName, contactFullName },
-                { contactPhoneNumberParamName, contactPhoneNumber }
+                { ContactFullNameParamName, contactFullName },
+                { ContactPhoneNumberParamName, contactPhoneNumber }
             };
 
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
+                    _requestUri,
                     userPhonebook.OwnerUserId,
                     postData));
 
@@ -222,14 +224,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { contactFullNameParamName, newContactName },
-                { contactPhoneNumberParamName, newContactPhoneNumber }
+                { ContactFullNameParamName, newContactName },
+                { ContactPhoneNumberParamName, newContactPhoneNumber }
             };
 
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
+                    _requestUri,
                     userPhonebook.OwnerUserId,
                     postData));
 
@@ -270,14 +272,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             var postData = new Dictionary<string, string>
             {
-                { contactFullNameParamName, newContactName },
-                { contactPhoneNumberParamName, newContactPhoneNumber }
+                { ContactFullNameParamName, newContactName },
+                { ContactPhoneNumberParamName, newContactPhoneNumber }
             };
 
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(
-                    Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
+                    _requestUri,
                     userPhonebook.OwnerUserId,
                     postData));
 
@@ -318,14 +320,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
                 var postData = new Dictionary<string, string>
                 {
-                    { contactFullNameParamName, newContactName },
-                    { contactPhoneNumberParamName, newContactPhoneNumber }
+                    { ContactFullNameParamName, newContactName },
+                    { ContactPhoneNumberParamName, newContactPhoneNumber }
                 };
 
                 // Act
                 var response = await _httpClient.SendAsync(
                     TestSetup.CreateHttpRequestMessage(
-                        Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts"),
+                        _requestUri,
                         userPhonebooks[i].OwnerUserId,
                         postData));
 
