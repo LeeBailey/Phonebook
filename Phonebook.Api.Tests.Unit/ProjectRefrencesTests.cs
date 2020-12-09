@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Xml;
 using System.Xml.Linq;
 using Xunit;
 
@@ -10,40 +11,42 @@ namespace Phonebook.Api.Tests
 {
     public class ProjectRefrencesTests
     {
+        private const string Api_Tests_Unit = @"Phonebook.Api.Tests.Unit\Phonebook.Api.Tests.Unit.csproj";
+        private const string Api = @"Phonebook.Api\Phonebook.Api.csproj";
+        private const string Domain_ApplicationServices = 
+            @"Phonebook.Domain\Phonebook.Domain.ApplicationServices\Phonebook.Domain.ApplicationServices.csproj";
+        private const string Domain_Infrastructure_Abstractions =
+            @"Phonebook.Domain\Phonebook.Domain.Infrastructure.Abstractions\Phonebook.Domain.Infrastructure.Abstractions.csproj";
+        private const string Domain_Model =
+            @"Phonebook.Domain\Phonebook.Domain.Model\Phonebook.Domain.Model.csproj";
+        private const string Infrastructure_EntityPersistance = 
+            @"Phonebook.Infrastructure\Phonebook.Infrastructure.EntityPersistance\Phonebook.Infrastructure.EntityPersistance.csproj";
+
         [Fact]
         public void PhonebookDomainApplicationServicesProject_OnlyRefrerencesAllowedProjects()
         {
-            var solutionRelativeProjectFilePath = 
-                @"Phonebook.Domain\Phonebook.Domain.ApplicationServices\Phonebook.Domain.ApplicationServices.csproj";
-
-            var actualReferences = GetProjectReferences(solutionRelativeProjectFilePath);
+            var actualReferences = GetProjectReferences(Domain_ApplicationServices);
 
             Assert.Equal(new string[] {
-                @"..\Phonebook.Domain.Infrastructure.Abstractions\Phonebook.Domain.Infrastructure.Abstractions.csproj",
-                @"..\Phonebook.Domain.Model\Phonebook.Domain.Model.csproj"
+                Domain_Infrastructure_Abstractions,
+                Domain_Model
             }, actualReferences);
         }
         
         [Fact]
         public void PhonebookDomainInfrastructureAbstractionsProject_OnlyRefrerencesAllowedProjects()
         {
-            var solutionRelativeProjectFilePath = 
-                @"Phonebook.Domain\Phonebook.Domain.Infrastructure.Abstractions\Phonebook.Domain.Infrastructure.Abstractions.csproj";
-
-            var actualReferences = GetProjectReferences(solutionRelativeProjectFilePath);
+            var actualReferences = GetProjectReferences(Domain_Infrastructure_Abstractions);
 
             Assert.Equal(new string[] {
-                @"..\Phonebook.Domain.Model\Phonebook.Domain.Model.csproj"
+                Domain_Model
             }, actualReferences);
         }
 
         [Fact]
         public void PhonebookDomainModelProject_OnlyRefrerencesAllowedProjects()
         {
-            var solutionRelativeProjectFilePath =
-                @"Phonebook.Domain\Phonebook.Domain.Model\Phonebook.Domain.Model.csproj";
-
-            var actualReferences = GetProjectReferences(solutionRelativeProjectFilePath);
+            var actualReferences = GetProjectReferences(Domain_Model);
 
             Assert.Equal(Array.Empty<string>(), actualReferences);
         }
@@ -51,38 +54,31 @@ namespace Phonebook.Api.Tests
         [Fact]
         public void PhonebookInfrastructureEntityPersistanceProject_OnlyRefrerencesAllowedProjects()
         {
-            var solutionRelativeProjectFilePath =
-                @"Phonebook.Infrastructure\Phonebook.Infrastructure.EntityPersistance\Phonebook.Infrastructure.EntityPersistance.csproj";
-
-            var actualReferences = GetProjectReferences(solutionRelativeProjectFilePath);
+            var actualReferences = GetProjectReferences(Infrastructure_EntityPersistance);
 
             Assert.Equal(new string[] {
-                @"..\..\Phonebook.Domain\Phonebook.Domain.Infrastructure.Abstractions\Phonebook.Domain.Infrastructure.Abstractions.csproj",
+                Domain_Infrastructure_Abstractions,
             }, actualReferences);
         }
 
         [Fact]
         public void PhonebookApiProject_OnlyRefrerencesAllowedProjects()
         {
-            var solutionRelativeProjectFilePath = @"Phonebook.Api\Phonebook.Api.csproj";
-
-            var actualReferences = GetProjectReferences(solutionRelativeProjectFilePath);
+            var actualReferences = GetProjectReferences(Api);
 
             Assert.Equal(new string[] {
-                @"..\Phonebook.Domain\Phonebook.Domain.ApplicationServices\Phonebook.Domain.ApplicationServices.csproj",
-                @"..\Phonebook.Infrastructure\Phonebook.Infrastructure.EntityPersistance\Phonebook.Infrastructure.EntityPersistance.csproj"
+                Domain_ApplicationServices,
+                Infrastructure_EntityPersistance
             }, actualReferences);
         }
 
         [Fact]
         public void PhonebookApiTestsUnitProject_OnlyRefrerencesAllowedProjects()
         {
-            var solutionRelativeProjectFilePath = @"Phonebook.Api.Tests.Unit\Phonebook.Api.Tests.Unit.csproj";
-
-            var actualReferences = GetProjectReferences(solutionRelativeProjectFilePath);
+            var actualReferences = GetProjectReferences(Api_Tests_Unit);
 
             Assert.Equal(new string[] {
-                @"..\Phonebook.Api\Phonebook.Api.csproj",
+                Api,
             }, actualReferences);
         }
 
@@ -91,16 +87,18 @@ namespace Phonebook.Api.Tests
             var solutionDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
                 !.Split("\\Phonebook.Api.Tests.Unit").First();
 
-            var projectDefinition = XDocument.Load(Path.Combine(solutionDirectory, solutionRelativeProjectFilePath));
+            var projectFilePath = Path.Combine(solutionDirectory, solutionRelativeProjectFilePath);
 
-            var references = projectDefinition
+            var references = XDocument.Load(projectFilePath)
                 ?.Element("Project")
                 ?.Elements("ItemGroup")
                 ?.Elements("ProjectReference")
                 ?.Attributes("Include")
-                ?.Select(x => x.Value);
+                ?.Select(x => 
+                    Path.GetFullPath(Path.GetDirectoryName(projectFilePath) + "\\" + x.Value)
+                        .Replace(solutionDirectory, string.Empty).TrimStart('\\'));
 
-            return references ?? Array.Empty<string>();
+            return references ?? throw new XmlException("Unable to retrieve references for project");
         }
     }
 }
