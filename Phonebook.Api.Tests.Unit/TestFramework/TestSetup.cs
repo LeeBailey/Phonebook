@@ -69,7 +69,7 @@ namespace Phonebook.Api.Tests.Unit.TestFramework
         public static HttpRequestMessage CreateHttpRequestMessage(
             string requestUri,
             Guid? userId = null,
-            object postData = null,
+            object? postData = null,
             string origin = "http://localhost")
         {
             var httpRequest = new HttpRequestMessage

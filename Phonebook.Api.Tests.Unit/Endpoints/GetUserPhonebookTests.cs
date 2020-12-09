@@ -22,13 +22,16 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         private readonly HttpClient _httpClient;
         private readonly MockServices _mockServices;
         private readonly string _requestUri;
+        private readonly string _httpClientBaseAddress;
 
         public GetUserPhonebookTests()
         {
             _host = TestSetup.CreateHost();
             _httpClient = _host.GetTestClient();
             _mockServices = _host.Services.GetRequiredService<MockServices>();
-            _requestUri = Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook");
+            _httpClientBaseAddress = _httpClient.BaseAddress?.ToString() 
+                ?? throw new NullReferenceException(nameof(_httpClient.BaseAddress));
+            _requestUri = Path.Combine(_httpClientBaseAddress, "phonebook");
         }
 
         [Fact]
@@ -40,7 +43,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
             (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(string.Empty);
 
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
@@ -66,7 +69,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Assert
             response.EnsureSuccessStatusCode();
-            response.EnsureCorsAllowOriginHeader((string)null);
+            response.EnsureCorsAllowOriginHeader((string?)null);
             (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo("[]");
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
@@ -81,7 +84,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var randomUserId = Guid.NewGuid();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
-                .Returns(Task.FromResult<UserPhonebook>(null));
+                .Returns(Task.FromResult<UserPhonebook?>(null));
 
             // Act
             var response = await _httpClient.SendAsync(
@@ -92,7 +95,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             await response.EnsureBadRequestContent("Bad Request");
-            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
@@ -116,7 +119,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Assert
             response.EnsureSuccessStatusCode();
-            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
             (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo("[]");
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
@@ -150,7 +153,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Assert
             response.EnsureSuccessStatusCode();
-            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
             (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(
                 JsonSerializer.Serialize(userPhonebook.Contacts.Select(x =>
                     new { id = x.Id, fullName = x.ContactName, phoneNumber = x.ContactPhoneNumber.Value })
@@ -188,7 +191,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
                 // Assert
                 response.EnsureSuccessStatusCode();
-                response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+                response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
                 (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(
                     JsonSerializer.Serialize(new[] {
                         new 

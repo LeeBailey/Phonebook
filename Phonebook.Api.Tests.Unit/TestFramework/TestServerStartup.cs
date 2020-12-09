@@ -19,7 +19,7 @@ namespace Phonebook.Api.Tests.Unit.TestFramework
             mockPhonebookDbContextFactory.Setup(x => x.Create()).Returns(mockPhonebookDbContext.Object);
 
             services.AddSingleton(x => mockPhonebookDbContextFactory.Object);
-            services.AddScoped(x => new MockServices { MockPhonebookDbContext = mockPhonebookDbContext });
+            services.AddScoped(x => new MockServices(mockPhonebookDbContext));
         }
     }
 }

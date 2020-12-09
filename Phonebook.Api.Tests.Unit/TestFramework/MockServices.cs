@@ -5,6 +5,11 @@ namespace Phonebook.Api.Tests.Unit.TestFramework
 {
     public class MockServices
     {
-        public Mock<IPhonebookDbContext> MockPhonebookDbContext { get; set; }
+        public MockServices(Mock<IPhonebookDbContext> mockPhonebookDbContext)
+        {
+            MockPhonebookDbContext = mockPhonebookDbContext;
+        }
+
+        public Mock<IPhonebookDbContext> MockPhonebookDbContext { get; private set; }
     }
 }

@@ -88,17 +88,19 @@ namespace Phonebook.Api.Tests
 
         private static IEnumerable<string> GetProjectReferences(string solutionRelativeProjectFilePath)
         {
-            var solutionDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+            var solutionDirectory = (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty)
                 .Split("\\Phonebook.Api.Tests.Unit").First();
 
             var projectDefinition = XDocument.Load(Path.Combine(solutionDirectory, solutionRelativeProjectFilePath));
 
-            return projectDefinition
-                .Element("Project")
-                .Elements("ItemGroup")
-                .Elements("ProjectReference")
-                .Attributes("Include")
-                .Select(x => x.Value);
+            var references = projectDefinition
+                ?.Element("Project")
+                ?.Elements("ItemGroup")
+                ?.Elements("ProjectReference")
+                ?.Attributes("Include")
+                ?.Select(x => x.Value);
+
+            return references ?? Array.Empty<string>();
         }
     }
 }

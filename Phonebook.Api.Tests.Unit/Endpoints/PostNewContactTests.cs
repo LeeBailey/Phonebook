@@ -26,12 +26,15 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
         private readonly string _requestUri;
         private const string ContactFullNameParamName = "contactFullName";
         private const string ContactPhoneNumberParamName = "contactPhoneNumber";
+        private readonly string _httpClientBaseAddress;
 
         public PostNewContactTests()
         {
             _host = TestSetup.CreateHost();
             _httpClient = _host.GetTestClient();
             _mockServices = _host.Services.GetRequiredService<MockServices>();
+            _httpClientBaseAddress = _httpClient.BaseAddress?.ToString()
+                ?? throw new NullReferenceException(nameof(_httpClient.BaseAddress));
             _requestUri = Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts");
         }
 
@@ -59,7 +62,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
             (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(string.Empty);
 
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
@@ -106,7 +109,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Assert
             response.EnsureSuccessStatusCode();
-            response.EnsureCorsAllowOriginHeader((string)null);
+            response.EnsureCorsAllowOriginHeader((string?)null);
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebook.OwnerUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
@@ -121,7 +124,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var randomUserId = Guid.NewGuid();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
-                .Returns(Task.FromResult<UserPhonebook>(null));
+                .Returns(Task.FromResult<UserPhonebook?>(null));
 
             var postData = new Dictionary<string, string>
             {
@@ -138,7 +141,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
@@ -147,18 +150,18 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
         public class InvalidPostParameters : IEnumerable<object[]>
         {
-            private readonly List<object[]> _data = new List<object[]>
+            private readonly List<object?[]> _data = new List<object?[]>
             {
-                new object[] { string.Empty, string.Empty },
-                new object[] { null, null },
-                new object[] { null, TestSetup.GetRandomPhoneNumber().ToString() },
-                new object[] { string.Empty, TestSetup.GetRandomPhoneNumber().ToString() },
-                new object[] { TestSetup.GetRandomString(20), null },
-                new object[] { TestSetup.GetRandomString(20), string.Empty },
+                new object?[] { string.Empty, string.Empty },
+                new object?[] { null, null },
+                new object?[] { null, TestSetup.GetRandomPhoneNumber().ToString() },
+                new object?[] { string.Empty, TestSetup.GetRandomPhoneNumber().ToString() },
+                new object?[] { TestSetup.GetRandomString(20), null },
+                new object?[] { TestSetup.GetRandomString(20), string.Empty },
                 // phone number too long:
-                new object[] { TestSetup.GetRandomString(20), TestSetup.GetRandomString(33) },
+                new object?[] { TestSetup.GetRandomString(20), TestSetup.GetRandomString(33) },
                 // name too long:
-                new object[] { TestSetup.GetRandomString(129), TestSetup.GetRandomString(15) },
+                new object?[] { TestSetup.GetRandomString(129), TestSetup.GetRandomString(15) },
             };
 
             public IEnumerator<object[]> GetEnumerator()
@@ -195,7 +198,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             await response.EnsureBadRequestContent("One or more validation errors occurred.");
-            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
 
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
@@ -215,7 +218,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             _mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Callback(() =>
             {
-                    // Assert
+                // Assert
                 userPhonebook.Contacts.Should().BeEquivalentTo(new []
                 {
                     new Contact(newContactName, new PhoneNumber(newContactPhoneNumber))
@@ -237,7 +240,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Assert
             response.EnsureSuccessStatusCode();
-            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebook.OwnerUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
@@ -262,7 +265,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             _mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Callback(() =>
             {
-                    // Assert
+                // Assert
                 userPhonebook.Contacts.Should().BeEquivalentTo(new List<Contact>
                 {
                     existingContact,
@@ -285,7 +288,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Assert
             response.EnsureSuccessStatusCode();
-            response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebook.OwnerUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
@@ -333,7 +336,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
                 // Assert
                 response.EnsureSuccessStatusCode();
-                response.EnsureCorsAllowOriginHeader(_httpClient.BaseAddress);
+                response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
 
                 _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(userPhonebooks[i].OwnerUserId), Times.Once);
                 _mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(() => Times.Exactly(i + 1));

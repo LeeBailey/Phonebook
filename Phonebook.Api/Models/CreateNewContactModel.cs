@@ -6,10 +6,10 @@ namespace Phonebook.Api.Models
     {
         [Required]
         [MaxLength(128)]
-        public string ContactFullName { get; set; }
+        public string? ContactFullName { get; set; }
 
         [Required]
         [MaxLength(32)]
-        public string ContactPhoneNumber { get; set; }
+        public string? ContactPhoneNumber { get; set; }
     }
 }

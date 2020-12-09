@@ -16,11 +16,11 @@ namespace Phonebook.Api.Tests.Unit.TestFramework
             response.EnsureCorsAllowOriginHeader(expectedHeaderValue.ToString());
         }
 
-        public static void EnsureCorsAllowOriginHeader(this HttpResponseMessage response, string expectedHeaderValue)
+        public static void EnsureCorsAllowOriginHeader(this HttpResponseMessage response, string? expectedHeaderValue)
         {
             if (expectedHeaderValue is null)
             {
-                response.Headers.TryGetValues(CorsConstants.AccessControlAllowOrigin, out IEnumerable<string> headerValues);
+                response.Headers.TryGetValues(CorsConstants.AccessControlAllowOrigin, out IEnumerable<string>? headerValues);
 
                 headerValues.Should().BeNull();
             }
