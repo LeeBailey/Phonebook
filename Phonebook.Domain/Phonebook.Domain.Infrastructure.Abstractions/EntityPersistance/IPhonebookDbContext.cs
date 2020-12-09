@@ -7,7 +7,7 @@ namespace Phonebook.Domain.Infrastructure.Abstractions.EntityPersistance
 {
     public interface IPhonebookDbContext : IDisposable
     {
-        Task<UserPhonebook> GetUserPhonebook(Guid ownerUserId);
+        Task<UserPhonebook?> GetUserPhonebook(Guid ownerUserId);
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

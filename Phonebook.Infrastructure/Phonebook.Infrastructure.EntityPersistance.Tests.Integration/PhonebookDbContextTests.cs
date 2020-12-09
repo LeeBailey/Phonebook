@@ -156,7 +156,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 DataHelper.SaveUserPhonebook(existingPhonebook);
 
                 // Act
-                var userPhonebook = await context.GetUserPhonebook(existingPhonebook.OwnerUserId);
+                var userPhonebook = (await context.GetUserPhonebook(existingPhonebook.OwnerUserId))!;
                 userPhonebook.Contacts.Add(new Contact(
                     DataHelper.GetRandomString(contactFullNameLength),
                     new PhoneNumber(DataHelper.GetRandomString(contactPhoneNumberLength))));
@@ -195,12 +195,12 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 DataHelper.SaveUserPhonebook(existingPhonebook);
 
                 // Act
-                var userPhonebook = await context.GetUserPhonebook(existingPhonebook.OwnerUserId);
+                var userPhonebook = (await context.GetUserPhonebook(existingPhonebook.OwnerUserId))!;
                 userPhonebook.Contacts.Add(new Contact(newContactName, newContactPhoneNumber));
                 await context.SaveChangesAsync();
 
                 // Assert
-                var actual = DataHelper.GetUserPhonebook(userPhonebook.Id);
+                var actual = DataHelper.GetUserPhonebook(userPhonebook.Id)!;
 
                 actual.Id.Should().Be(existingPhonebook.Id);
                 actual.OwnerUserId.Should().Be(existingPhonebook.OwnerUserId);
@@ -239,12 +239,12 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
                 DataHelper.SaveUserPhonebook(existingPhonebook);
 
                 // Act
-                var userPhonebook = await context.GetUserPhonebook(existingPhonebook.OwnerUserId);
+                var userPhonebook = (await context.GetUserPhonebook(existingPhonebook.OwnerUserId))!;
                 userPhonebook.Contacts.Add(new Contact(newContactName, newContactPhoneNumber));
                 await context.SaveChangesAsync();
 
                 // Assert
-                var actual = DataHelper.GetUserPhonebook(userPhonebook.Id);
+                var actual = DataHelper.GetUserPhonebook(userPhonebook.Id)!;
 
                 actual.Id.Should().Be(existingPhonebook.Id);
                 actual.OwnerUserId.Should().Be(existingPhonebook.OwnerUserId);

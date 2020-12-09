@@ -55,8 +55,8 @@ namespace PhoneBook.Api.Controllers
                     await _createNewContactCommand.Execute(
                             new CreateNewContactDto(
                                 GetUserId(),
-                                model.ContactFullName,
-                                new PhoneNumber(model.ContactPhoneNumber)));
+                                model.ContactFullName!,
+                                new PhoneNumber(model.ContactPhoneNumber!)));
 
                     return Ok();
                 }

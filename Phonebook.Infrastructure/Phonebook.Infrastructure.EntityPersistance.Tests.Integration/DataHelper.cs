@@ -22,7 +22,7 @@ namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
             return config.GetConnectionString("PhonebookDbConnection");
         }
 
-        internal static UserPhonebookData GetUserPhonebook(int userPhonebookId)
+        internal static UserPhonebookData? GetUserPhonebook(int userPhonebookId)
         {
             using var connection = new SqlConnection(GetConnectionString());
             var userPhonebook = connection.Query(

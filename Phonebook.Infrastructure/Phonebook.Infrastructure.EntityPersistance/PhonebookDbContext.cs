@@ -12,9 +12,9 @@ namespace Phonebook.Infrastructure.EntityPersistance
             : base(options)
         { }
 
-        protected DbSet<UserPhonebook> UserPhonebooks { get; set; }
+        protected DbSet<UserPhonebook> UserPhonebooks { get; set; } = default!;
 
-        public async Task<UserPhonebook> GetUserPhonebook(Guid ownerUserId)
+        public async Task<UserPhonebook?> GetUserPhonebook(Guid ownerUserId)
         {
             return await UserPhonebooks
                 .Include(x => x.Contacts)

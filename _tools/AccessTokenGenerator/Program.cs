@@ -12,18 +12,23 @@ namespace AccessTokenGenerator
         static void Main(string[] args)
         {
             Console.WriteLine("Enter a userId:");
-            var userId = Guid.Parse(Console.ReadLine());
+            var userId = Guid.Parse(ReadLine());
 
             Console.WriteLine("Enter the token signing key");
-            var signingKey = Console.ReadLine();
+            var signingKey = ReadLine();
 
             Console.WriteLine("Enter the token issuer");
-            var issuer = Console.ReadLine();
+            var issuer = ReadLine();
 
             Console.WriteLine("Enter the token audience");
-            var audience = Console.ReadLine();
+            var audience = ReadLine();
 
             Console.WriteLine(GenerateToken(userId, signingKey, issuer, audience));
+        }
+
+        private static string ReadLine()
+        {
+            return Console.ReadLine() ?? string.Empty;
         }
 
         public static string GenerateToken(Guid userId, string signingKey, string issuer, string audience)

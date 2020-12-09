@@ -57,7 +57,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var randomUserId = Guid.NewGuid();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
-                .Returns(Task.FromResult(new UserPhonebook(randomUserId)));
+                .Returns(Task.FromResult<UserPhonebook?>(new UserPhonebook(randomUserId)));
 
             // Act
             var response = await _httpClient.SendAsync(
@@ -109,7 +109,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var randomUserId = Guid.NewGuid();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
-                .Returns(Task.FromResult(new UserPhonebook(randomUserId)));
+                .Returns(Task.FromResult<UserPhonebook?>(new UserPhonebook(randomUserId)));
 
             // Act
             var response = await _httpClient.SendAsync(
@@ -143,7 +143,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             }
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
-                .Returns(Task.FromResult(userPhonebook));
+                .Returns(Task.FromResult<UserPhonebook?>(userPhonebook));
 
             // Act
             var response = await _httpClient.SendAsync(
@@ -181,7 +181,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
                 var userPhonebook = new UserPhonebook(randomUserId) { Contacts = { contact1, contact2 } };
 
                 _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
-                    .Returns(Task.FromResult(userPhonebook));
+                    .Returns(Task.FromResult<UserPhonebook?>(userPhonebook));
 
                 // Act
                 var response = await _httpClient.SendAsync(

@@ -88,8 +88,8 @@ namespace Phonebook.Api.Tests
 
         private static IEnumerable<string> GetProjectReferences(string solutionRelativeProjectFilePath)
         {
-            var solutionDirectory = (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty)
-                .Split("\\Phonebook.Api.Tests.Unit").First();
+            var solutionDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                !.Split("\\Phonebook.Api.Tests.Unit").First();
 
             var projectDefinition = XDocument.Load(Path.Combine(solutionDirectory, solutionRelativeProjectFilePath));
 

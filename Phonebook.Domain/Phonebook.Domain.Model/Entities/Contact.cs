@@ -14,8 +14,8 @@ namespace Phonebook.Domain.Model.Entities
 
         public int Id { get; protected set; }
 
-        public string ContactName { get; protected set; }
+        public string ContactName { get; protected set; } = default!;
 
-        public PhoneNumber ContactPhoneNumber { get; protected set; } 
+        public PhoneNumber ContactPhoneNumber { get; protected set; } = default!;
     }
 }

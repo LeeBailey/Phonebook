@@ -45,7 +45,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
-                .Returns(Task.FromResult(userPhonebook));
+                .Returns(Task.FromResult<UserPhonebook?>(userPhonebook));
 
             var postData = new Dictionary<string, string>
             {
@@ -79,7 +79,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
-                .Returns(Task.FromResult(userPhonebook));
+                .Returns(Task.FromResult<UserPhonebook?>(userPhonebook));
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Callback(() =>
@@ -180,7 +180,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
-                .Returns(Task.FromResult(userPhonebook));
+                .Returns(Task.FromResult<UserPhonebook?>(userPhonebook));
 
             var postData = new Dictionary<string, string>
             {
@@ -213,7 +213,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
-                .Returns(Task.FromResult(userPhonebook));
+                .Returns(Task.FromResult<UserPhonebook?>(userPhonebook));
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Callback(() =>
@@ -260,7 +260,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             userPhonebook.Contacts.Add(existingContact);
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
-                .Returns(Task.FromResult(userPhonebook));
+                .Returns(Task.FromResult<UserPhonebook?>(userPhonebook));
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Callback(() =>
@@ -309,7 +309,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
                 var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
                 userPhonebooks.Add(userPhonebook);
                 _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
-                    .Returns(Task.FromResult(userPhonebook));
+                    .Returns(Task.FromResult<UserPhonebook?>(userPhonebook));
 
                 _mockServices.MockPhonebookDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Callback(() =>

@@ -12,7 +12,7 @@ namespace Phonebook.Domain.ApplicationServices
         /// <summary>
         /// Id of the User.
         /// </summary>
-        public object UserId { get; set; }
+        public object? UserId { get; set; }
 
         /// <summary>
         /// Creates a new <see cref="UserPhonebookNotFoundException"/> object.
@@ -40,7 +40,7 @@ namespace Phonebook.Domain.ApplicationServices
         /// <summary>
         /// Creates a new <see cref="UserPhonebookNotFoundException"/> object.
         /// </summary>
-        public UserPhonebookNotFoundException(object userId, Exception innerException)
+        public UserPhonebookNotFoundException(object userId, Exception? innerException)
             : base($"A phonebook with the following userId could not be found: {userId}", innerException)
         {
             UserId = userId;

@@ -12,7 +12,7 @@ namespace Phonebook.Domain.Model.ValueObjects
             {
                 return false;
             }
-            return ReferenceEquals(left, null) || left.Equals(right);
+            return ReferenceEquals(left, null) || left.Equals(right!);
         }
 
         protected static bool NotEqualOperator(ValueObject left, ValueObject right)
@@ -31,7 +31,7 @@ namespace Phonebook.Domain.Model.ValueObjects
 
             var other = (ValueObject)obj;
 
-            return this.GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
+            return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
         }
 
         public override int GetHashCode()
