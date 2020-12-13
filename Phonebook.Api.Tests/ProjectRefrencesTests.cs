@@ -11,7 +11,7 @@ namespace Phonebook.Api.Tests
 {
     public class ProjectRefrencesTests
     {
-        private const string Api_Tests_Unit = @"Phonebook.Api.Tests.Unit\Phonebook.Api.Tests.Unit.csproj";
+        private const string Api_Tests = @"Phonebook.Api.Tests\Phonebook.Api.Tests.csproj";
         private const string Api = @"Phonebook.Api\Phonebook.Api.csproj";
         private const string Domain_ApplicationServices = 
             @"Phonebook.Domain\Phonebook.Domain.ApplicationServices\Phonebook.Domain.ApplicationServices.csproj";
@@ -21,6 +21,8 @@ namespace Phonebook.Api.Tests
             @"Phonebook.Domain\Phonebook.Domain.Model\Phonebook.Domain.Model.csproj";
         private const string Infrastructure_EntityPersistance = 
             @"Phonebook.Infrastructure\Phonebook.Infrastructure.EntityPersistance\Phonebook.Infrastructure.EntityPersistance.csproj";
+        private const string Infrastructure_EntityPersistance_Tests =
+            @"Phonebook.Infrastructure\Phonebook.Infrastructure.EntityPersistance.Tests\Phonebook.Infrastructure.EntityPersistance.Tests.csproj";
 
         [Fact]
         public void PhonebookDomainApplicationServicesProject_OnlyRefrerencesAllowedProjects()
@@ -73,19 +75,29 @@ namespace Phonebook.Api.Tests
         }
 
         [Fact]
-        public void PhonebookApiTestsUnitProject_OnlyRefrerencesAllowedProjects()
+        public void PhonebookApiTestsProject_OnlyRefrerencesAllowedProjects()
         {
-            var actualReferences = GetProjectReferences(Api_Tests_Unit);
+            var actualReferences = GetProjectReferences(Api_Tests);
 
             Assert.Equal(new string[] {
                 Api,
             }, actualReferences);
         }
 
+        [Fact]
+        public void PhonebookInfrastructureEntityPersistanceTestsProject_OnlyRefrerencesAllowedProjects()
+        {
+            var actualReferences = GetProjectReferences(Infrastructure_EntityPersistance_Tests);
+
+            Assert.Equal(new string[] {
+                Infrastructure_EntityPersistance,
+            }, actualReferences);
+        }
+
         private static IEnumerable<string> GetProjectReferences(string solutionRelativeProjectFilePath)
         {
             var solutionDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-                !.Split("\\Phonebook.Api.Tests.Unit").First();
+                !.Split("\\Phonebook.Api.Tests").First();
 
             var projectFilePath = Path.Combine(solutionDirectory, solutionRelativeProjectFilePath);
 
