@@ -40,5 +40,16 @@ namespace Phonebook.Api.Tests.Unit.TestFramework
             jsonContent.GetProperty("type").GetString().Should().Be("https://tools.ietf.org/html/rfc7231#section-6.5.1");
             jsonContent.GetProperty("traceId").GetString().Should().NotBeNullOrEmpty();
         }
+
+        public static async Task EnsureContentIsEquivalentTo(this HttpResponseMessage response, object expected)
+        {
+            var options = new JsonSerializerOptions
+            {
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+
+            (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(
+                JsonSerializer.Serialize(expected, options));
+        }
     }
 }

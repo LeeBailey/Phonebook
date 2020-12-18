@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -61,11 +60,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Act
             var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(
-                    _requestUri,
-                    randomUserId,
-                    null,
-                    disallowedOrigin));
+                TestSetup.CreateHttpRequestMessage(_requestUri, randomUserId, null, disallowedOrigin));
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -88,9 +83,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Act
             var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(
-                    _requestUri, 
-                    randomUserId));
+                TestSetup.CreateHttpRequestMessage(_requestUri, randomUserId));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -113,9 +106,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Act
             var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(
-                    _requestUri,
-                    randomUserId));
+                TestSetup.CreateHttpRequestMessage(_requestUri, randomUserId));
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -138,8 +129,9 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             var userPhonebook = new UserPhonebook(randomUserId);
             for (int i = 0; i < noOfContacts; i++)
             {
-                userPhonebook.Contacts.Add(new Contact(TestSetup.GetRandomString(20), TestSetup.GetRandomPhoneNumber())
-                    .WithIdSetToRandomInteger());
+                userPhonebook.Contacts.Add(
+                    new Contact(TestSetup.GetRandomString(20), TestSetup.GetRandomPhoneNumber())
+                        .WithIdSetToRandomInteger());
             }
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
@@ -147,17 +139,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Act
             var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(
-                    _requestUri,
-                    randomUserId));
+                TestSetup.CreateHttpRequestMessage( _requestUri, randomUserId));
 
             // Assert
             response.EnsureSuccessStatusCode();
             response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
-            (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(
-                JsonSerializer.Serialize(userPhonebook.Contacts.Select(x =>
-                    new { id = x.Id, fullName = x.ContactName, phoneNumber = x.ContactPhoneNumber.Value })
-            ));
+
+            await response.EnsureContentIsEquivalentTo(userPhonebook.Contacts.Select(x =>
+                    new { id = x.Id, fullName = x.ContactName, phoneNumber = x.ContactPhoneNumber.Value }));
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
@@ -185,15 +174,13 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
                 // Act
                 var response = await _httpClient.SendAsync(
-                    TestSetup.CreateHttpRequestMessage(
-                        _requestUri,
-                        randomUserId));
+                    TestSetup.CreateHttpRequestMessage(_requestUri, randomUserId));
 
                 // Assert
                 response.EnsureSuccessStatusCode();
                 response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
-                (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(
-                    JsonSerializer.Serialize(new[] {
+                await response.EnsureContentIsEquivalentTo(
+                    new[] {
                         new 
                         { 
                             id = contact1.Id,
@@ -206,7 +193,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
                             fullName = contact2.ContactName,
                             phoneNumber = contact2.ContactPhoneNumber.Value 
                         }
-                    }));
+                    });
 
                 _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
                 _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(() => Times.Exactly(i + 1));

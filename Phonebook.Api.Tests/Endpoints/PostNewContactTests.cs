@@ -55,10 +55,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Act
             var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(
-                    _requestUri,
-                    null,
-                    postData));
+                TestSetup.CreateHttpRequestMessage( _requestUri, null, postData));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -134,10 +131,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Act
             var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(
-                    _requestUri,
-                    randomUserId,
-                    postData));
+                TestSetup.CreateHttpRequestMessage(_requestUri, randomUserId, postData));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -190,10 +184,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
 
             // Act
             var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(
-                    _requestUri,
-                    userPhonebook.OwnerUserId,
-                    postData));
+                TestSetup.CreateHttpRequestMessage(_requestUri, userPhonebook.OwnerUserId, postData));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
