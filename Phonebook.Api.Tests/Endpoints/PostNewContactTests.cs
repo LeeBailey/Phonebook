@@ -142,7 +142,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
-        public class InvalidPostParameters : IEnumerable<object[]>
+        private class InvalidPostParameters : IEnumerable<object[]>
         {
             private readonly List<object?[]> _data = new List<object?[]>
             {
@@ -194,13 +194,29 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
-        public async Task GivenUserPhonebookExistsAndParamtersAreValid_WhenNewContactIsPosted_ThenContactIsCreatedAndOkIsReturned()
+        private class ValidPostParameters : IEnumerable<object[]>
+        {
+            private readonly List<object?[]> _data = new List<object?[]>
+            {
+                new object?[] { "First", "1234" },
+                new object?[] { "First Last", "0738768123" },
+                new object?[] { "A", "000" },
+                new object?[] { "000", "AA" },
+            };
+
+            public IEnumerator<object[]> GetEnumerator()
+            { return _data.GetEnumerator(); }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            { return GetEnumerator(); }
+        }
+
+        [Theory]
+        [ClassData(typeof(ValidPostParameters))]
+        public async Task GivenUserPhonebookExistsAndParamtersAreValid_WhenNewContactIsPosted_ThenContactIsCreatedAndOkIsReturned(
+            string contactFullName, string contactPhoneNumber)
         {
             // Arrange
-            var newContactName = TestSetup.GetRandomString(10);
-            var newContactPhoneNumber = TestSetup.GetRandomPhoneNumber().ToString();
-
             var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
 
             _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
@@ -212,14 +228,14 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
                 // Assert
                 userPhonebook.Contacts.Should().BeEquivalentTo(new []
                 {
-                    new Contact(newContactName, new PhoneNumber(newContactPhoneNumber))
+                    new Contact(contactFullName, new PhoneNumber(contactPhoneNumber))
                 });
             });
 
             var postData = new Dictionary<string, string>
             {
-                { ContactFullNameParamName, newContactName },
-                { ContactPhoneNumberParamName, newContactPhoneNumber }
+                { ContactFullNameParamName, contactFullName },
+                { ContactPhoneNumberParamName, contactPhoneNumber }
             };
 
             // Act
