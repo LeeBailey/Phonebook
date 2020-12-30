@@ -1,4 +1,5 @@
 ﻿using Phonebook.Domain.Infrastructure.Abstractions.EntityPersistance;
+using Phonebook.Domain.Model.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace Phonebook.Domain.ApplicationServices.Queries
             _phonebookDbContextFactory = phonebookDbContextFactory;
         }
 
-        public async Task<IEnumerable<PhonebookContactDto>> Execute(Guid ownerUserId)
+        public async Task<Response> Execute(Guid ownerUserId)
         {
             using var phonebookDbContext = _phonebookDbContextFactory.Create();
 
@@ -26,8 +27,37 @@ namespace Phonebook.Domain.ApplicationServices.Queries
                 throw new UserPhonebookNotFoundException(ownerUserId);
             }
 
-            return userPhonebook.Contacts
-                .Select(x => new PhonebookContactDto(x.Id, x.ContactName, x.ContactPhoneNumber));
+            return new Response(userPhonebook.Contacts
+                .Select(x => new Result(x.Id, x.ContactName, x.ContactPhoneNumber)));
+        }
+
+        public class Response
+        {
+            public readonly IEnumerable<Result> Results;
+
+            public Response(IEnumerable<Result> results)
+            {
+                Results = results;
+            }
+        }
+
+        public class Result
+        {
+            public Result(
+                int id,
+                string contactName,
+                PhoneNumber contactPhoneNumber)
+            {
+                Id = id;
+                ContactName = contactName;
+                ContactPhoneNumber = contactPhoneNumber;
+            }
+
+            public int Id { get; protected set; }
+
+            public string ContactName { get; private set; }
+
+            public PhoneNumber ContactPhoneNumber { get; private set; }
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Phonebook.Api.Models
 {
-    public class CreateNewContactModel
+    public class PostNewContactRequestData
     {
         [Required]
         [MaxLength(128)]

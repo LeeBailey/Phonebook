@@ -7,7 +7,6 @@ using Phonebook.Domain.ApplicationServices.Commands;
 using Phonebook.Domain.ApplicationServices.Queries;
 using Phonebook.Domain.Model.ValueObjects;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,14 +29,14 @@ namespace PhoneBook.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ContactDetailsModel>>> Get()
+        public async Task<ActionResult<GetUserPhonebookResponseData>> Get()
         {
             try
             {
-                var phonebookContacts = await _getPhonebookContactsQuery.Execute(GetUserId());
+                var queryResult = await _getPhonebookContactsQuery.Execute(GetUserId());
 
-                return Ok(phonebookContacts
-                    .Select(x => new ContactDetailsModel(x.Id, x.ContactName, x.ContactPhoneNumber.Value)));
+                return Ok(new GetUserPhonebookResponseData(queryResult.Results.Select(x =>
+                    new GetUserPhonebookResponseData.Result(x.Id, x.ContactName, x.ContactPhoneNumber.Value))));
             }
             catch (UserPhonebookNotFoundException)
             {
@@ -46,17 +45,17 @@ namespace PhoneBook.Api.Controllers
         }
 
         [HttpPost("contacts")]
-        public async Task<ActionResult> Post([FromBody]CreateNewContactModel model)
+        public async Task<ActionResult> Post([FromBody]PostNewContactRequestData requestData)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
                     await _createNewContactCommand.Execute(
-                            new CreateNewContactDto(
+                            new CreateNewContactCommand.Request(
                                 GetUserId(),
-                                model.ContactFullName!,
-                                new PhoneNumber(model.ContactPhoneNumber!)));
+                                requestData.ContactFullName!,
+                                new PhoneNumber(requestData.ContactPhoneNumber!)));
 
                     return Ok();
                 }

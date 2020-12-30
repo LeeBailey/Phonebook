@@ -65,7 +65,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             // Assert
             response.EnsureSuccessStatusCode();
             response.EnsureCorsAllowOriginHeader((string?)null);
-            (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo("[]");
+            await response.EnsureContentIsEquivalentTo(new { results = Array.Empty<object>() });
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
@@ -111,7 +111,7 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             // Assert
             response.EnsureSuccessStatusCode();
             response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
-            (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo("[]");
+            await response.EnsureContentIsEquivalentTo(new { results = Array.Empty<object>() });
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
@@ -145,8 +145,12 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
             response.EnsureSuccessStatusCode();
             response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
 
-            await response.EnsureContentIsEquivalentTo(userPhonebook.Contacts.Select(x =>
-                    new { id = x.Id, fullName = x.ContactName, phoneNumber = x.ContactPhoneNumber.Value }));
+            await response.EnsureContentIsEquivalentTo(
+                new
+                {
+                    results = userPhonebook.Contacts.Select(x =>
+                        new { id = x.Id, fullName = x.ContactName, phoneNumber = x.ContactPhoneNumber.Value })
+                });
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
@@ -179,21 +183,23 @@ namespace Phonebook.Api.Tests.Unit.Endpoints
                 // Assert
                 response.EnsureSuccessStatusCode();
                 response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
-                await response.EnsureContentIsEquivalentTo(
-                    new[] {
-                        new 
-                        { 
+                await response.EnsureContentIsEquivalentTo(new
+                {
+                    results = new[] {
+                        new
+                        {
                             id = contact1.Id,
                             fullName = contact1.ContactName,
                             phoneNumber = contact1.ContactPhoneNumber.Value
                         },
-                        new 
-                        { 
+                        new
+                        {
                             id = contact2.Id,
                             fullName = contact2.ContactName,
-                            phoneNumber = contact2.ContactPhoneNumber.Value 
+                            phoneNumber = contact2.ContactPhoneNumber.Value
                         }
-                    });
+                    }
+                });
 
                 _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
                 _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(() => Times.Exactly(i + 1));
