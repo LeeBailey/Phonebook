@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Phonebook.Api.Tests.Unit.TestFramework
+namespace Phonebook.Api.Tests.TestFramework
 {
     internal static class HttpResponseExtensions
     {

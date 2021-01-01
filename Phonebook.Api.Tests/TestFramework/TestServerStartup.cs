@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
-namespace Phonebook.Api.Tests.Unit.TestFramework
+namespace Phonebook.Api.Tests.TestFramework
 {
     public class TestServerStartup : Startup
     {

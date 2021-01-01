@@ -3,7 +3,7 @@ using Phonebook.Domain.Infrastructure.Abstractions.EntityPersistance;
 using System;
 using System.Threading;
 
-namespace Phonebook.Api.Tests.Unit.TestFramework
+namespace Phonebook.Api.Tests.TestFramework
 {
     public static class MockPhonebookDbContextExtensions
     { 

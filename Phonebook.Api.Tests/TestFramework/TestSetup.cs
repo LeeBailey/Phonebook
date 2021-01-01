@@ -13,7 +13,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 
-namespace Phonebook.Api.Tests.Unit.TestFramework
+namespace Phonebook.Api.Tests.TestFramework
 {
     public static class TestSetup
     {

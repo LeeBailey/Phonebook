@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Phonebook.Api.Tests.Unit.TestFramework
+namespace Phonebook.Api.Tests.TestFramework
 {
     public static class ObjectExtensions
     {

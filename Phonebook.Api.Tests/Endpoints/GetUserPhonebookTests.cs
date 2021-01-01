@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using Phonebook.Api.Tests.Unit.TestFramework;
+using Phonebook.Api.Tests.TestFramework;
 using Phonebook.Domain.Model.Entities;
 using System;
 using System.IO;
@@ -13,7 +13,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Phonebook.Api.Tests.Unit.Endpoints
+namespace Phonebook.Api.Tests.Endpoints
 {
     public class GetUserPhonebookTests
     {

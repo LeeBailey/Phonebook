@@ -1,7 +1,7 @@
 ﻿using Moq;
 using Phonebook.Domain.Infrastructure.Abstractions.EntityPersistance;
 
-namespace Phonebook.Api.Tests.Unit.TestFramework
+namespace Phonebook.Api.Tests.TestFramework
 {
     public class MockServices
     {
