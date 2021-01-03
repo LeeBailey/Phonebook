@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
+namespace Phonebook.Infrastructure.EntityPersistance.Tests
 {
     public class PhonebookDbContextTests
     {

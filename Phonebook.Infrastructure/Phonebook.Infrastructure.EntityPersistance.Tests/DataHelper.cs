@@ -7,7 +7,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
 
-namespace Phonebook.Infrastructure.EntityPersistance.Tests.Integration
+namespace Phonebook.Infrastructure.EntityPersistance.Tests
 {
     internal static class DataHelper
     {
