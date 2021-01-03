@@ -34,11 +34,33 @@ namespace Phonebook.Api.Tests.Endpoints
         }
 
         [Fact]
-        public async Task GivenUserIsNotAuthenticated_WhenGetAllIsRequested_ThenUnauthorizedIsReturned()
+        public async Task GivenAuthorizationHeaderIsNotSupplied_WhenGetAllIsRequested_ThenUnauthorizedIsReturned()
         {
             // Act
             var response = await _httpClient.SendAsync(
                 TestSetup.CreateHttpRequestMessage(_requestUri));
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
+            (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(string.Empty);
+
+            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task GivenBearerTokenIsInvalid_WhenGetAllIsRequested_ThenUnauthorizedIsReturned()
+        {
+            // Arrange
+            var httpRequest = TestSetup.CreateHttpRequestMessage(_requestUri);
+            httpRequest.Headers.Add(
+                "Authorization",
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+                ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
+                ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c");
+
+            // Act
+            var response = await _httpClient.SendAsync(httpRequest);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
