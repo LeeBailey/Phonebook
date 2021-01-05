@@ -43,7 +43,7 @@ namespace Phonebook.Api.Tests.Endpoints
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
-            (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(string.Empty);
+            await response.EnsureContentIsEquivalentTo(string.Empty);
 
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
@@ -65,7 +65,7 @@ namespace Phonebook.Api.Tests.Endpoints
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
-            (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(string.Empty);
+            await response.EnsureContentIsEquivalentTo(string.Empty);
 
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }

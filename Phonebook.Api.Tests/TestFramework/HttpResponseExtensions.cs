@@ -27,7 +27,7 @@ namespace Phonebook.Api.Tests.TestFramework
             else
             {
                 response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault()
-                    .Should().BeEquivalentTo(expectedHeaderValue.TrimEnd('/'));
+                    .Should().Be(expectedHeaderValue.TrimEnd('/'));
             }
         }
 
@@ -48,8 +48,17 @@ namespace Phonebook.Api.Tests.TestFramework
                 Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
 
-            (await response.Content.ReadAsStringAsync()).Should().BeEquivalentTo(
-                JsonSerializer.Serialize(expected, options));
+            var actualContent = await response.Content.ReadAsStringAsync();
+
+            if (expected as string == string.Empty)
+            {
+                actualContent.Should().Be(string.Empty);
+            }
+            else
+            {
+                actualContent.Should().Be(
+                    JsonSerializer.Serialize(expected, options));
+            }
         }
     }
 }
