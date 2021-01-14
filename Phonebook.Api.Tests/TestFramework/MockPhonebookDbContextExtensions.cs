@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Phonebook.Api.Tests.TestFramework
 {
-    public static class MockPhonebookDbContextExtensions
+    internal static class MockPhonebookDbContextExtensions
     { 
         public static void EnsureSaveChangesCalled(
             this Mock<IPhonebookDbContext> mockPhonebookDbContext, Func<Times> times)

@@ -15,7 +15,7 @@ using System.Text.Json;
 
 namespace Phonebook.Api.Tests.TestFramework
 {
-    public static class TestSetup
+    internal static class TestSetup
     {
         private static readonly Random _random = new Random();
         private static readonly string _authJwtTokenSigningKey = "*G-KaPdSgVkYp3s5v8y/B?E(H+MbQeThWmZq4t7w!z$C&F)J@NcRfUjXn2r5u8x/";
@@ -45,11 +45,14 @@ namespace Phonebook.Api.Tests.TestFramework
             return hostBuilder.Start();
         }
 
-        public static string GenerateToken(Guid userId)
+        public static string GenerateToken(string? userId)
         {
-            var claims = new List<Claim>() {
-                new Claim("UserId", userId.ToString()),
-            };
+            var claims = new List<Claim>();
+
+            if (userId is not null)
+            {
+                claims.Add(new Claim("UserId", userId));
+            }
 
             var secretKey = new SymmetricSecurityKey(
                Encoding.UTF8.GetBytes(_authJwtTokenSigningKey));
@@ -68,16 +71,15 @@ namespace Phonebook.Api.Tests.TestFramework
 
         public static HttpRequestMessage CreateHttpRequestMessage(
             string requestUri,
-            Guid? userId = null,
-            object? postData = null,
-            string origin = "http://localhost")
+            IDictionary<string, string>? postData = null,
+            string? originHeaderValue = null)
         {
             var httpRequest = new HttpRequestMessage
             {
                 RequestUri = new Uri(requestUri)
             };
 
-            if (!(postData is null))
+            if (postData is not null)
             {
                 httpRequest.Method = HttpMethod.Post;
 
@@ -87,13 +89,34 @@ namespace Phonebook.Api.Tests.TestFramework
                     "application/json");
             }
 
-            if (userId.HasValue)
-            {
-                var jwt = GenerateToken(userId.Value);
-                httpRequest.Headers.Add("Authorization", $"Bearer {jwt}");
-            }
+            httpRequest.Headers.Add("Origin", originHeaderValue ?? "http://localhost");
 
-            httpRequest.Headers.Add("Origin", origin);
+            return httpRequest;
+        }
+
+        public static HttpRequestMessage CreateHttpRequestMessage(
+        string requestUri,
+        Guid userId,
+        IDictionary<string, string>? postData = null,
+        string? originHeaderValue = null)
+        {
+            var httpRequest = CreateHttpRequestMessage(requestUri, GenerateToken(userId.ToString()!), postData , originHeaderValue);
+
+            return httpRequest;
+        }
+
+        public static HttpRequestMessage CreateHttpRequestMessage(
+            string requestUri,
+            string? authorizationHeaderValue,
+            IDictionary<string, string>? postData = null,
+            string? originHeaderValue = null)
+        {
+            var httpRequest = CreateHttpRequestMessage(requestUri, postData, originHeaderValue);
+
+            if (authorizationHeaderValue is not null)
+            {
+                httpRequest.Headers.Add("Authorization", $"Bearer {authorizationHeaderValue}");
+            }
 
             return httpRequest;
         }

@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Phonebook.Api.Models;
-using Phonebook.Domain.ApplicationServices;
 using Phonebook.Domain.ApplicationServices.Commands;
 using Phonebook.Domain.ApplicationServices.Queries;
 using Phonebook.Domain.Model.ValueObjects;
 using System;
 using System.Linq;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 
 namespace PhoneBook.Api.Controllers
@@ -31,17 +31,10 @@ namespace PhoneBook.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<GetUserPhonebookResponseData>> Get()
         {
-            try
-            {
-                var queryResult = await _getPhonebookContactsQuery.Execute(GetUserId());
+            var queryResult = await _getPhonebookContactsQuery.Execute(GetUserId());
 
-                return Ok(new GetUserPhonebookResponseData(queryResult.Results.Select(x =>
-                    new GetUserPhonebookResponseData.Result(x.Id, x.ContactName, x.ContactPhoneNumber.Value))));
-            }
-            catch (UserPhonebookNotFoundException)
-            {
-                return BadRequest();
-            }
+            return Ok(new GetUserPhonebookResponseData(queryResult.Results.Select(x =>
+                new GetUserPhonebookResponseData.Result(x.Id, x.ContactName, x.ContactPhoneNumber.Value))));
         }
 
         [HttpPost("contacts")]
@@ -49,20 +42,13 @@ namespace PhoneBook.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                try
-                {
-                    await _createNewContactCommand.Execute(
-                            new CreateNewContactCommand.Request(
-                                GetUserId(),
-                                requestData.ContactFullName!,
-                                new PhoneNumber(requestData.ContactPhoneNumber!)));
+                await _createNewContactCommand.Execute(
+                        new CreateNewContactCommand.Request(
+                            GetUserId(),
+                            requestData.ContactFullName!,
+                            new PhoneNumber(requestData.ContactPhoneNumber!)));
 
-                    return Ok();
-                }
-                catch (UserPhonebookNotFoundException)
-                {
-                    return BadRequest();
-                }
+                return Ok();
             }
 
             return BadRequest(ModelState);
@@ -70,7 +56,12 @@ namespace PhoneBook.Api.Controllers
 
         private Guid GetUserId()
         {
-            return Guid.Parse(User.Claims.First(i => i.Type == "UserId").Value);
+            if (Guid.TryParse(User.Claims.FirstOrDefault(i => i.Type == "UserId")?.Value, out var userId))
+            {
+                return userId;
+            }
+
+            throw new AuthenticationException("UserId claim not found");
         }
     }
 }

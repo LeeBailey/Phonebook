@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Phonebook.Api.Tests.TestFramework
 {
-    public static class ObjectExtensions
+    internal static class ObjectExtensions
     {
         public static void SetPrivateProperty(this object obj, string propertyName, object value)
         {

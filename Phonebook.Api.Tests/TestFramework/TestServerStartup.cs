@@ -6,7 +6,7 @@ using Moq;
 
 namespace Phonebook.Api.Tests.TestFramework
 {
-    public class TestServerStartup : Startup
+    internal class TestServerStartup : Startup
     {
         public TestServerStartup(IConfiguration configuration)
             : base(configuration)

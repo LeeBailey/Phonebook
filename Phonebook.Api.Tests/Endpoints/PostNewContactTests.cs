@@ -7,7 +7,6 @@ using Phonebook.Api.Tests.TestFramework;
 using Phonebook.Domain.Model.Entities;
 using Phonebook.Domain.Model.ValueObjects;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -38,8 +37,22 @@ namespace Phonebook.Api.Tests.Endpoints
             _requestUri = Path.Combine(_httpClient.BaseAddress.ToString(), "phonebook/contacts");
         }
 
-        [Fact]
-        public async Task GivenAuthorizationHeaderIsNotSupplied_WhenNewContactIsPosted_ThenUnauthorizedIsReturned()
+        private class InvalidAuthorizationHeaderParameters : ClassDataBase
+        {
+            protected override List<object?[]> Data => new List<object?[]>
+            {
+                new object?[] { null },
+                new object?[] { "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+                    ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
+                    ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" },
+                new object?[] { TestSetup.GenerateToken(null) }
+            };
+        }
+
+        [Theory]
+        [ClassData(typeof(InvalidAuthorizationHeaderParameters))]
+        public async Task GivenAuthorizationHeaderIsNotProvidedOrInvalid_WhenNewContactIsPosted_ThenUnauthorizedIsReturned(
+            string? authorizationHeaderValue)
         {
             // Arrange
             var postData = new Dictionary<string, string>
@@ -50,7 +63,7 @@ namespace Phonebook.Api.Tests.Endpoints
 
             // Act
             var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage( _requestUri, null, postData));
+                TestSetup.CreateHttpRequestMessage( _requestUri, authorizationHeaderValue, postData));
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -61,38 +74,95 @@ namespace Phonebook.Api.Tests.Endpoints
         }
 
         [Fact]
-        public async Task GivenBearerTokenIsInvalid_WhenNewContactIsPosted_ThenUnauthorizedIsReturned()
+        public async Task GivenUserPhonebookDoesntExist_WhenNewContactIsPosted_ThenBadRequestIsReturned()
         {
             // Arrange
+            var randomUserId = Guid.NewGuid();
+
+            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
+                .Returns(Task.FromResult<UserPhonebook?>(null));
+
             var postData = new Dictionary<string, string>
             {
                 { ContactFullNameParamName, TestSetup.GetRandomString(20) },
                 { ContactPhoneNumberParamName, TestSetup.GetRandomPhoneNumber().ToString() }
             };
 
-            var httpRequest = TestSetup.CreateHttpRequestMessage(_requestUri, null, postData);
-            httpRequest.Headers.Add(
-                "Authorization",
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
-                ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
-                ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c");
-
             // Act
-            var response = await _httpClient.SendAsync(httpRequest);
+            var response = await _httpClient.SendAsync(
+                TestSetup.CreateHttpRequestMessage(_requestUri, randomUserId, postData));
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
-            await response.EnsureContentIsEquivalentTo(string.Empty);
+
+            _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
+            _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
+            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+        }
+
+        private class InvalidPostParameters : ClassDataBase
+        {
+            protected override List<object?[]> Data => new List<object?[]>
+            {
+                new object?[] { string.Empty, string.Empty },
+                new object?[] { null, null },
+                new object?[] { null, TestSetup.GetRandomPhoneNumber().ToString() },
+                new object?[] { string.Empty, TestSetup.GetRandomPhoneNumber().ToString() },
+                new object?[] { TestSetup.GetRandomString(20), null },
+                new object?[] { TestSetup.GetRandomString(20), string.Empty },
+                // phone number too long:
+                new object?[] { TestSetup.GetRandomString(20), TestSetup.GetRandomString(33) },
+                // name too long:
+                new object?[] { TestSetup.GetRandomString(129), TestSetup.GetRandomString(15) },
+            };
+        }
+
+        [Theory]
+        [ClassData(typeof(InvalidPostParameters))]
+        public async Task GivenUserPhonebookExistsButParamtersAreNotValid_WhenNewContactIsPosted_ThenBadRequestIsReturned(
+            string contactFullName, string contactPhoneNumber)
+        {
+            // Arrange
+            var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
+
+            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
+                .Returns(Task.FromResult<UserPhonebook?>(userPhonebook));
+
+            var postData = new Dictionary<string, string>
+            {
+                { ContactFullNameParamName, contactFullName },
+                { ContactPhoneNumberParamName, contactPhoneNumber }
+            };
+
+            // Act
+            var response = await _httpClient.SendAsync(
+                TestSetup.CreateHttpRequestMessage(_requestUri, userPhonebook.OwnerUserId, postData));
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            await response.EnsureBadRequestContent("One or more validation errors occurred.");
+            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
 
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+        }
+
+        private class ValidPostParameters : ClassDataBase
+        {
+            protected override List<object?[]> Data => new List<object?[]>
+            {
+                new object?[] { "First", "1234" },
+                new object?[] { "First Last", "0738768123" },
+                new object?[] { "A", "000" },
+                new object?[] { "000", "AA" },
+            };
         }
 
         [Fact]
         public async Task GivenOriginNotInAllowedOriginsList_WhenNewContactIsPosted_ThenStatusIsOkButCorsHeaderIsNotReturned()
         {
             // Arrange
-            const string disallowedOrigin = "https://disallowedorigin.com";
+            const string disallowedOrigin = "https://disallowed-origin.com";
             var newContactName = TestSetup.GetRandomString(10);
             var newContactPhoneNumber = TestSetup.GetRandomPhoneNumber().ToString();
 
@@ -135,103 +205,6 @@ namespace Phonebook.Api.Tests.Endpoints
             _mockServices.MockPhonebookDbContext.EnsureSaveChangesCalled(Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
-        }
-
-        [Fact]
-        public async Task GivenUserPhonebookDoesntExist_WhenNewContactIsPosted_ThenBadRequestIsReturned()
-        {
-            // Arrange
-            var randomUserId = Guid.NewGuid();
-
-            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
-                .Returns(Task.FromResult<UserPhonebook?>(null));
-
-            var postData = new Dictionary<string, string>
-            {
-                { ContactFullNameParamName, TestSetup.GetRandomString(20) },
-                { ContactPhoneNumberParamName, TestSetup.GetRandomPhoneNumber().ToString() }
-            };
-
-            // Act
-            var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(_requestUri, randomUserId, postData));
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
-
-            _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
-            _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
-            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
-        }
-
-        private class InvalidPostParameters : IEnumerable<object[]>
-        {
-            private readonly List<object?[]> _data = new List<object?[]>
-            {
-                new object?[] { string.Empty, string.Empty },
-                new object?[] { null, null },
-                new object?[] { null, TestSetup.GetRandomPhoneNumber().ToString() },
-                new object?[] { string.Empty, TestSetup.GetRandomPhoneNumber().ToString() },
-                new object?[] { TestSetup.GetRandomString(20), null },
-                new object?[] { TestSetup.GetRandomString(20), string.Empty },
-                // phone number too long:
-                new object?[] { TestSetup.GetRandomString(20), TestSetup.GetRandomString(33) },
-                // name too long:
-                new object?[] { TestSetup.GetRandomString(129), TestSetup.GetRandomString(15) },
-            };
-
-            public IEnumerator<object[]> GetEnumerator()
-            { return _data.GetEnumerator(); }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            { return GetEnumerator(); }
-        }
-
-        [Theory]
-        [ClassData(typeof(InvalidPostParameters))]
-        public async Task GivenUserPhonebookExistsButParamtersAreNotValid_WhenNewContactIsPosted_ThenBadRequestIsReturned(
-            string contactFullName, string contactPhoneNumber)
-        {
-            // Arrange
-            var userPhonebook = new UserPhonebook(Guid.NewGuid()).WithIdSetToRandomInteger();
-
-            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(userPhonebook.OwnerUserId))
-                .Returns(Task.FromResult<UserPhonebook?>(userPhonebook));
-
-            var postData = new Dictionary<string, string>
-            {
-                { ContactFullNameParamName, contactFullName },
-                { ContactPhoneNumberParamName, contactPhoneNumber }
-            };
-
-            // Act
-            var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(_requestUri, userPhonebook.OwnerUserId, postData));
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            await response.EnsureBadRequestContent("One or more validation errors occurred.");
-            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
-
-            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
-        }
-
-        private class ValidPostParameters : IEnumerable<object[]>
-        {
-            private readonly List<object?[]> _data = new List<object?[]>
-            {
-                new object?[] { "First", "1234" },
-                new object?[] { "First Last", "0738768123" },
-                new object?[] { "A", "000" },
-                new object?[] { "000", "AA" },
-            };
-
-            public IEnumerator<object[]> GetEnumerator()
-            { return _data.GetEnumerator(); }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            { return GetEnumerator(); }
         }
 
         [Theory]

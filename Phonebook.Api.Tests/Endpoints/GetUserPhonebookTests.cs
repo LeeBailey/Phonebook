@@ -6,6 +6,7 @@ using Moq;
 using Phonebook.Api.Tests.TestFramework;
 using Phonebook.Domain.Model.Entities;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -33,31 +34,25 @@ namespace Phonebook.Api.Tests.Endpoints
             _requestUri = Path.Combine(_httpClientBaseAddress, "phonebook");
         }
 
-        [Fact]
-        public async Task GivenAuthorizationHeaderIsNotSupplied_WhenGetAllIsRequested_ThenUnauthorizedIsReturned()
+        private class InvalidAuthorizationHeaderParameters : ClassDataBase
         {
-            // Act
-            var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(_requestUri));
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-            response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
-            await response.EnsureContentIsEquivalentTo(string.Empty);
-
-            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+            protected override List<object?[]> Data => new List<object?[]>
+            {
+                new object?[] { null },
+                new object?[] { "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+                    ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
+                    ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" },
+                new object?[] { TestSetup.GenerateToken(null) }
+            };
         }
 
-        [Fact]
-        public async Task GivenBearerTokenIsInvalid_WhenGetAllIsRequested_ThenUnauthorizedIsReturned()
+        [Theory]
+        [ClassData(typeof(InvalidAuthorizationHeaderParameters))]
+        public async Task GivenAuthorizationHeaderIsNotProvidedOrInvalid_WhenGetAllIsRequested_ThenUnauthorizedIsReturned(
+            string? authorizationHeaderValue)
         {
             // Arrange
-            var httpRequest = TestSetup.CreateHttpRequestMessage(_requestUri);
-            httpRequest.Headers.Add(
-                "Authorization",
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
-                ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ" +
-                ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c");
+            var httpRequest = TestSetup.CreateHttpRequestMessage(_requestUri, authorizationHeaderValue);
 
             // Act
             var response = await _httpClient.SendAsync(httpRequest);
@@ -67,30 +62,6 @@ namespace Phonebook.Api.Tests.Endpoints
             response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
             await response.EnsureContentIsEquivalentTo(string.Empty);
 
-            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
-        }
-
-        [Fact]
-        public async Task GivenOriginNotInAllowedOriginsList_WhenGetAllIsRequested_ThenStatusIsOkButCorsHeaderIsNotReturned()
-        {
-            // Arrange
-            const string disallowedOrigin = "https://disallowedorigin.com";
-            var randomUserId = Guid.NewGuid();
-
-            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
-                .Returns(Task.FromResult<UserPhonebook?>(new UserPhonebook(randomUserId)));
-
-            // Act
-            var response = await _httpClient.SendAsync(
-                TestSetup.CreateHttpRequestMessage(_requestUri, randomUserId, null, disallowedOrigin));
-
-            // Assert
-            response.EnsureSuccessStatusCode();
-            response.EnsureCorsAllowOriginHeader((string?)null);
-            await response.EnsureContentIsEquivalentTo(new { results = Array.Empty<object>() });
-
-            _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
-            _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
             _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
         }
 
@@ -109,8 +80,32 @@ namespace Phonebook.Api.Tests.Endpoints
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            await response.EnsureBadRequestContent("Bad Request");
+            await response.EnsureContentIsEquivalentTo("User Phonebook not found");
             response.EnsureCorsAllowOriginHeader(_httpClientBaseAddress);
+
+            _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
+            _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);
+            _mockServices.MockPhonebookDbContext.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task GivenOriginNotInAllowedOriginsList_WhenGetAllIsRequested_ThenStatusIsOkButCorsHeaderIsNotReturned()
+        {
+            // Arrange
+            const string disallowedOrigin = "https://disallowed-origin.com";
+            var randomUserId = Guid.NewGuid();
+
+            _mockServices.MockPhonebookDbContext.Setup(x => x.GetUserPhonebook(randomUserId))
+                .Returns(Task.FromResult<UserPhonebook?>(new UserPhonebook(randomUserId)));
+
+            // Act
+            var response = await _httpClient.SendAsync(
+                TestSetup.CreateHttpRequestMessage(_requestUri, randomUserId, null, disallowedOrigin));
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            response.EnsureCorsAllowOriginHeader((string?)null);
+            await response.EnsureContentIsEquivalentTo(new { results = Array.Empty<object>() });
 
             _mockServices.MockPhonebookDbContext.Verify(x => x.GetUserPhonebook(randomUserId), Times.Once);
             _mockServices.MockPhonebookDbContext.EnsureDisposeCalled(Times.Once);

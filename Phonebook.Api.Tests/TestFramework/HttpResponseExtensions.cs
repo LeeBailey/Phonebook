@@ -50,9 +50,9 @@ namespace Phonebook.Api.Tests.TestFramework
 
             var actualContent = await response.Content.ReadAsStringAsync();
 
-            if (expected as string == string.Empty)
+            if (expected is string)
             {
-                actualContent.Should().Be(string.Empty);
+                actualContent.Should().Be(expected as string);
             }
             else
             {

@@ -1,14 +1,19 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Phonebook.Domain.ApplicationServices;
 using Phonebook.Domain.ApplicationServices.Commands;
 using Phonebook.Domain.ApplicationServices.Queries;
 using Phonebook.Domain.Infrastructure.Abstractions.EntityPersistance;
 using Phonebook.Infrastructure.EntityPersistance;
 using System.Linq;
+using System.Net;
+using System.Security.Authentication;
 using System.Text;
 
 namespace PhoneBook.Api
@@ -77,6 +82,26 @@ namespace PhoneBook.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseExceptionHandler(a => a.Run(async context =>
+            {
+                var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                var exception = exceptionHandlerPathFeature.Error;
+
+                switch (exception)
+                {
+                    case AuthenticationException:
+                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        await context.Response.WriteAsync(string.Empty);
+                        break;
+                    case UserPhonebookNotFoundException:
+                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        await context.Response.WriteAsync("User Phonebook not found");
+                        break;
+                    default:
+                        break;
+                }
+            }));
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
